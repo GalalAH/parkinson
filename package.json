@@ -1,0 +1,21 @@
+{
+  "name": "node_test",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "start": "nodemon app.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "-": "^0.0.1",
+    "body-parser": "^1.20.2",
+    "express": "^4.18.2",
+    "g": "^2.0.1",
+    "mogoose": "^0.0.1-security",
+    "mongoose": "^8.0.3",
+    "nodemon": "^3.0.1"
+  }
+}
