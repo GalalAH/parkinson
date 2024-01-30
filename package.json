@@ -11,11 +11,19 @@
   "license": "ISC",
   "dependencies": {
     "-": "^0.0.1",
+    "bcrypt": "^5.1.1",
     "body-parser": "^1.20.2",
+    "dotenv": "^16.3.1",
     "express": "^4.18.2",
+    "express-flash": "^0.0.2",
+    "express-session": "^1.17.3",
     "g": "^2.0.1",
     "mogoose": "^0.0.1-security",
     "mongoose": "^8.0.3",
-    "nodemon": "^3.0.1"
+    "nodemailer": "^6.9.8",
+    "nodemon": "^3.0.1",
+    "passport": "^0.7.0",
+    "passport-local": "^1.0.0",
+    "uuid": "^9.0.1"
   }
 }

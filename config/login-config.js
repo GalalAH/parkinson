@@ -12,7 +12,6 @@ return done(null,false,{message:'no user with that email'})
     
    
      try{if (await bycrypt.compare(password,user.password)){
-        console.log('login user : '+user._id)
         return done(null,user)
         
      }else{
