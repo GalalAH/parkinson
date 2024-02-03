@@ -185,7 +185,8 @@ bycrypt.compare(uniqueString,hasheduniqueString)
 
 )
   app.get('/logins',async(req,res)=>{
-  res.send({message:"verified",status:200}
+   const user = await req.user
+  res.send({message:"verified",status:200,UserId:user._id}
   ) })
   app.get('/loginfailed',(req,res)=>{
     res.send({message:req.session.messages,
