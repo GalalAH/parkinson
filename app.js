@@ -129,9 +129,8 @@ status: 200
   }
 })
 app.get('/',async(req,res)=>{
- const name = await req.user
- console.log(name.Name)
-  res.send( name._id)
+
+  res.send("the server is live ")
 })
 
 //email verify api
