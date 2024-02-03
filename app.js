@@ -8,7 +8,7 @@ const {blog,Doctors,user,UserVerification} =require("./schems")
 const app = express()
 const bycrypt =require("bcrypt")
 const mongoose = require("mongoose")
-const dbURI= "mongodb+srv://Galal:3493476g@parkinson.hbqgvlv.mongodb.net/tesr?retryWrites=true&w=majority"
+const dbURI= process.env.DB_URI
 mongoose.connect(dbURI)
 .then(app.listen(process.env.PORT,()=>{
   console.log('server is running ')
@@ -95,6 +95,39 @@ saveUninitialized:false
 app.use(flash())
 app.use(passport.initialize())
 app.use(passport.session())
+
+app.post('/signup',async (req,res)=>{
+  let {password,email,name} = req.query  
+  try{
+    const emailcheck =await user.exists({Email:email})
+    
+    if(emailcheck){
+      return res.send({message : "this email is already used",statues:404})
+  }
+   
+ const hashedpass = await bycrypt.hash(password,10)
+ const User = new user({   
+  password:hashedpass,
+  Name:name,
+  Email:email ,
+  verified:false
+
+}) 
+
+
+User.save()
+.then((result)=>{
+  
+sendverificationemail(result,res)
+})
+res.send({message:"singup successfully",
+status: 200
+           })
+  }catch(e){
+    console.log(e)
+    res.send({message : "somthing went wrong please try again later",statues:404})
+  }
+})
 app.get('/',async(req,res)=>{
  const name = await req.user
  console.log(name.Name)
@@ -115,7 +148,7 @@ if(result){
     UserVerification.deleteOne({userId:_id})
     .then(result =>{
 user.deleteOne({userId:_id}
-  .then(res.send('ling expired'))
+  .then(res.send({message:'ling expired',status:200}))
   .catch(err => console.log(err)))
 
     } )
@@ -152,9 +185,11 @@ bycrypt.compare(uniqueString,hasheduniqueString)
 
 )
   app.get('/logins',async(req,res)=>{
-  res.send("verified") })
+  res.send({message:"verified",status:200}
+  ) })
   app.get('/loginfailed',(req,res)=>{
-    res.send("error : "+req.session.messages)
+    res.send({message:req.session.messages,
+    status:404})
     })
 
 app.get('/login',(req,res)=>{
@@ -162,7 +197,8 @@ app.get('/login',(req,res)=>{
  user.findOne({Email:email})
  .then(((data)=>{
   if(!data.verified){
- res.status(404).send({message:"user isn't verified"})
+ res.send({message:"user isn't verified",
+status: 404})
   }else{res.redirect(`/verify?password=${password}&email=${email}`)}
  }))}
 )
@@ -171,36 +207,6 @@ app.get("/verify",passport.authenticate('local',{
   failureRedirect:'/loginfailed',
   failureMessage:true
 }))
-app.post('/signup',async (req,res)=>{
-  let {password,email,name} = req.query  
-  try{
-    const emailcheck =await user.exists({Email:email})
-    
-    if(emailcheck){
-      return res.status(404).send({message : "this email is already used"})
-  }
-   
- const hashedpass = await bycrypt.hash(password,10)
- const User = new user({   
-  password:hashedpass,
-  Name:name,
-  Email:email ,
-  verified:false
-
-}) 
-
-
-User.save()
-.then((result)=>{
-  
-sendverificationemail(result,res)
-})
-res.status(200).send({userid : User._id})
-  }catch(e){
-    console.log(e)
-    res.status(404).send({message : "somthing went wrong please try again later"})
-  }
-})
 app.get('/blog',(req,res)=>{
   const Blog = new schems.blog({   
  title:req.query.title ,
