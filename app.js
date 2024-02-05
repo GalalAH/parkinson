@@ -33,7 +33,7 @@ const transport =nodemailer.createTransport({
 //email sender details  n                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
 const{v4:uuidv4}=require('uuid')
 const  sendverificationemail = ({_id,Email},res)=>{
-const  currentUrl= "http://localhost:5050/"
+const  currentUrl= process.env.URL
 const uniqueString = uuidv4()+ _id
 const mailOptions={from:process.env.AUTH_EMAIL,
 to:Email,
@@ -109,12 +109,9 @@ app.post('/signup',async (req,res)=>{
  const User = new user({   
   password:hashedpass,
   Name:name,
-  Email:email ,
+  Email:email,
   verified:false
-
 }) 
-
-
 User.save()
 .then((result)=>{
   
