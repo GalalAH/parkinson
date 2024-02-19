@@ -1,4 +1,4 @@
-/sinup
+/singup
     Req:{
       password : string
       email : String
