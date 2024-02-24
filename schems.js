@@ -39,8 +39,8 @@ password:{
         type: String,
         requird : true
 },
-phone:{required:true,
-type: Number },
+    address:String,
+phone:{type: Number },
 Name:{ type: String,
     requird : true},
 

@@ -110,12 +110,9 @@ app.post('/signup',async (req,res)=>{
  const User = new user({   
   password:hashedpass,
   Name:name,
-  Email:email ,
+  Email:email,
   verified:false
-
 }) 
-
-
 User.save()
 .then((result)=>{
   
@@ -130,9 +127,8 @@ status: 200
   }
 })
 app.get('/',async(req,res)=>{
- const name = await req.user
- console.log(name.Name)
-  res.send( name._id)
+
+  res.send("the server is live ")
 })
 
 //email verify api

@@ -1,4 +1,8 @@
+
 post /sinup
+
+
+
     Req:{
       password : string
       email : String
@@ -9,13 +13,17 @@ post /sinup
 	Message:string
         Statues: int
 }
+
 get /login
+=======
+/l
 Req: nothing
 Res:{
 If (successfully) =>UserId:string
 Message:string
 Statues:int
 }
+
 get PatientList
     req:nothing
     res:"result": [
@@ -87,3 +95,6 @@ res:{ "result": [
 }
     or
     {message: string,status:int}
+=======
+
+
