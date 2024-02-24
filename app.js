@@ -4,7 +4,7 @@ if(process.env.NODE_ENV!=="production"){
 const nodemailer = require('nodemailer')
 const flash =require('express-flash')
 const express = require('express')
-const {blog,Doctors,user,UserVerification} =require("./schems")
+const {blog,Doctors,user,UserVerification,patient} =require("./schems")
 const app = express()
 const bycrypt =require("bcrypt")
 const mongoose = require("mongoose")
@@ -32,8 +32,9 @@ const transport =nodemailer.createTransport({
   }) 
 //email sender details  n                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
 const{v4:uuidv4}=require('uuid')
+const e = require('express')
 const  sendverificationemail = ({_id,Email},res)=>{
-const  currentUrl= "http://localhost:5050/"
+const  currentUrl= process.env.URL
 const uniqueString = uuidv4()+ _id
 const mailOptions={from:process.env.AUTH_EMAIL,
 to:Email,
@@ -218,7 +219,7 @@ app.get('/blog',(req,res)=>{
 })
 app.get('/doctorsinfo',(req,res)=>{
   
-  const doctoresinfo = new schems.Doctors({   
+  const doctoresinfo = new Doctors({   
  img:req.query.img ,
  name:req.query.name,
  role:req.query.role, 
@@ -236,5 +237,108 @@ res.status(404).send("log in first")
 
 }
 
+//doctor dashborad
+
+app.get("/PatientList",async(req,res)=>{
+  const user = await req.user
+  const id = user._id
+   patient.find({userId: id}).then((result)=>{
+    res.send({result,status:200})
+ }).catch((err)=>{res.send({message:"something went wrong try again later in PatientList",status:404})
+console.log(err)})
+})
+
+app.post("/addPateint",async(req,res)=>{
+  const user = await req.user
+  const id = user._id
+let {name,phone,gender,age,address}=req.query
+const Patient = new patient({
+userId:id,
+phone:phone,
+Name:name,
+gender:gender,
+age:age,
+address:address,
+illness:false
+})
+Patient.save()
+.then((result)=>{console.log(result)
+ res.send({message:"added successfully",status:200})
+}
+ )
+  .catch((err)=>{console.log("err in adding the patient :"+ err)
+  res.send({message:"something went wrong try again later",status:404})})
+})
 
 
+app.get("/deletePateint",async(req,res)=>{
+  const user = await req.user
+  const id = user._id
+ const patient_id = req.query.id
+patient.deleteOne({_id:patient_id}).then(res.send({message:"deleted successfully",status:200}))
+.catch((err)=>{console.log("err in deleteing the patient :"+ err)
+res.send({message:"something went wrong try again later",status:404})
+})
+})
+
+app.post("/editPateint",async(req,res)=>{
+  let{name,phone,gender,age,address,id}=req.query
+
+  patient.findByIdAndUpdate(id,{
+    userId:id,
+    phone:phone,
+    Name:name,
+    gender:gender,
+    age:age,
+    address:address,
+  
+    }).then((result)=>{res.send({result,status:200})})
+    .catch((err)=>{console.log("err in deleteing the patient :"+ err)
+       res.send({message:"something went wrong try again later",status:404})
+
+})})
+app.get("/findPatient",async(req,res)=>{
+  const user = await req.user
+  const id = user._id
+  const searchparam= req.query.param
+  const regex = new RegExp(`^${searchparam}`, 'i')
+  const query = {
+    userId:id,
+    $or: [
+      {
+        $expr: {
+          $regexMatch: {
+            input: { $toString: '$phone' },
+            regex,
+          },
+        },
+      },
+      { Name: { $regex: regex } },
+      { address: { $regex: regex } },
+      {
+        $expr: {
+          $regexMatch: {
+            input: { $toString: '$age' },
+            regex,
+          },
+        },
+      },
+      { gender: { $regex: regex } },
+    ],
+  };
+  patient.find(query
+  ).then((result)=>{
+res.send({result,status:200})
+console.log(result)
+})
+.catch((err)=>{console.log(err)
+ res.send({message:"something went wrong try again later",status:404})})
+
+
+})
+app.delete('/deleteall',async(req,res)=>{
+  const user = await req.user
+  const id = user._id
+patient.deleteMany({userId:id}).then(res.send("all deleted"))
+
+})
