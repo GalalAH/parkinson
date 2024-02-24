@@ -1,14 +1,12 @@
 
 post /sinup
 =========
-
-
     Req:{
       password : string
       email : String
       phone : number/int
       name:string		
-}
+      }
     Res:{
 	Message:string
         Statues: int
@@ -58,14 +56,13 @@ get PatientList
     ],
     "status": 200
 }
-  errpr stat
+  error stat
    ====
       res:{message: string,status:int}
 
 delete "/deletePateint"
 =============
 	req:{_id:string}
-	
 	
 	res:{message: string,status:int}
 	
