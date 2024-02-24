@@ -8,6 +8,9 @@ title: {
 body: {type: String,
     requird : true
 }})
+
+// user Verification 
+
 const UserVerificationschema = new schema({
 userId:String,
 UniqueString:String,
@@ -15,7 +18,7 @@ createdAt:Date,
 expiresAT:Date,
 
 })
-
+///////////
 const doctors =new schema({
 img:{type: String,
 requird : true}
@@ -27,6 +30,10 @@ requird : true}
     requird : true}
 
 })
+
+//  user shema
+
+
 const User = new schema({
 password:{
         type: String,
@@ -42,9 +49,24 @@ Email:{ type: String,
 verified:Boolean
 })
 
+//pateints schema
+
+const Patientschema = new schema({
+    userId: { type: String, required: true },
+    phone: { type: Number },
+    Name: { type: String, required: true },
+    address: { type: String },
+    age: { type: Number, required: true },  // 
+    gender: { type: String, required: true },
+    illness: { type: Boolean },
+    score:{type: Number}
+})
+
+
+const patient=mongoose.model("Pateints",Patientschema)
 const blog =mongoose.model("blog",blogschema)
 const Doctors = mongoose.model("Doctorsinfo",doctors)
 const user = mongoose.model("user",User)
 const UserVerification = mongoose.model("UserVerification",UserVerificationschema )
 
-module.exports ={blog,Doctors,user,UserVerification}
+module.exports ={blog,Doctors,user,UserVerification,patient}
