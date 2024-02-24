@@ -1,6 +1,6 @@
 
-##post /sinup
-
+post /sinup
+=
     Req:{
       password : string
       email : String
