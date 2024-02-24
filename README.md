@@ -43,7 +43,8 @@ get PatientList
 
    get  /addPateint
    =================
-     req:   res:"result": [
+     ###req:  {id:string}  
+     ###res:"result": [
         {
             "_id":string ,
             "userId":string ,
@@ -58,7 +59,8 @@ get PatientList
 }
   error stat
    ====
-      res:{message: string,status:int}
+      ###res:
+      {message: string,status:int}
 
 delete "/deletePateint"
 =============
