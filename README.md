@@ -63,41 +63,43 @@ get PatientList
 
 delete "/deletePateint"
 =============
-req:{_id:string}
+	req:{_id:string}
+	
+	
+	res:{message: string,status:int}
+	
+	post /editPateint
+	req:{ "_id":string ,
+	            "userId":string ,
+	            "phone":int ,
+	            "Name":string ,
+	            "age": int,
+	            "gender": string ,
+	            "illness":bolean,
+	    score:{type: int}}
 
-
-res:{message: string,status:int}
-
-post /editPateint
-req:{ "_id":string ,
-            "userId":string ,
-            "phone":int ,
-            "Name":string ,
-            "age": int,
-            "gender": string ,
-            "illness":bolean,
-    score:{type: int}}
-res:{message: string,status:int}
+     
+	res:{message: string,status:int}
 
 get "/findPatient"
 =============
-req: param
-
-res:{ "result": [
-        {
-            "_id":string ,
-            "userId":string ,
-            "phone":int ,
-            "Name":string ,
-            "age": int,
-            "gender": string ,
-            "illness":bolean,
-            score:int
-    ],
-    "status": 200
-}
+		req: param
+		
+		res:{ "result": [
+		        {
+		            "_id":string ,
+		            "userId":string ,
+		            "phone":int ,
+		            "Name":string ,
+		            "age": int,
+		            "gender": string ,
+		            "illness":bolean,
+		            score:int
+		    ],
+		    "status": 200
+		}
     or
-    {message: string,status:int}
+    		{message: string,status:int}
 
 
 
