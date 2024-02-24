@@ -9,8 +9,8 @@ post /sinup
       }
     Res:{
 	Message:string
-        Statues: int
-}
+        Statues: int}
+
 
 get /login
 =======
