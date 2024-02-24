@@ -1,6 +1,6 @@
 
 post /sinup
-
+=========
 
 
     Req:{
@@ -43,7 +43,8 @@ get PatientList
     }
 
 
-    /addPateint
+   get  /addPateint
+   =================
      req:   res:"result": [
         {
             "_id":string ,
@@ -61,6 +62,7 @@ get PatientList
     res:{message: string,status:int}
 
 delete "/deletePateint"
+=============
 req:{_id:string}
 
 
@@ -78,6 +80,7 @@ req:{ "_id":string ,
 res:{message: string,status:int}
 
 get "/findPatient"
+=============
 req: param
 
 res:{ "result": [
@@ -95,6 +98,6 @@ res:{ "result": [
 }
     or
     {message: string,status:int}
-=======
+
 
 
