@@ -1,6 +1,6 @@
 
-post /sinup
-=========
+##post /sinup
+
     Req:{
       password : string
       email : String
@@ -43,8 +43,8 @@ get PatientList
 
    get  /addPateint
    =================
-     ###req:  {id:string}  
-     ###res:"result": [
+     req:  {id:string}  
+     res:"result": [
         {
             "_id":string ,
             "userId":string ,
