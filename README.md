@@ -58,9 +58,9 @@ get PatientList
     ],
     "status": 200
 }
-errpr stat
-====
-    res:{message: string,status:int}
+  errpr stat
+   ====
+      res:{message: string,status:int}
 
 delete "/deletePateint"
 =============
