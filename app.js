@@ -1,10 +1,19 @@
 if(process.env.NODE_ENV!=="production"){
   require('dotenv').config()
 }
+
+const {generateWeeklySchedules,AutdSchedule}=require("./apoinmment")
+const multer = require('multer');
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
+const {authorize,uploadfile}=require('./imgUploader')
 const nodemailer = require('nodemailer')
 const flash =require('express-flash')
 const express = require('express')
-const {blog,Doctors,user,UserVerification,patient} =require("./schems")
+
+const {profile,user,UserVerification,patient,Schedule} =require("./schems")
+
+
 const app = express()
 const bycrypt =require("bcrypt")
 const mongoose = require("mongoose")
@@ -27,30 +36,37 @@ const transport =nodemailer.createTransport({
   if(err) console.log(err)
   else{console.log("ready for messages")
   console.log(success)}
-  
-  
   }) 
 //email sender details  n                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
-const{v4:uuidv4}=require('uuid')
-const e = require('express')
+
+
 const  sendverificationemail = ({_id,Email},res)=>{
 const  currentUrl= process.env.URL
-const uniqueString = uuidv4()+ _id
-const mailOptions={from:process.env.AUTH_EMAIL,
+const verificationCode = Math.floor(1000 + Math.random() * 9000);
+const mailOptions={
+from:process.env.AUTH_EMAIL,
+
 to:Email,
 subject:"Verify Your email",
-html:`<p>verify your eamil address to complete the singup and login into your account.</p><p>this link
-<b> expires in 6 hours</b>.</p><p>Press <a href=${currentUrl + 'user/verify/'+_id+"/"+uniqueString}>here</a>
- to proceed.</p>`,
+html:`<p>verify your eamil address to complete the singup and login into your account.</p><p>this is the verficationcode 
+ ${verificationCode} <b> expires in 6 hours</b>.</p>`
 
- 
 }
-bycrypt
-.hash(uniqueString,10)
-.then((hasheduniqueString)=>{
+
+
+const schedule = require('node-schedule');
+
+
+
+// Define a schedule to run at midnight (beginning of a new day)
+const midnightTask = schedule.scheduleJob('0 0 * * *', () => {
+  AutdSchedule()
+});
+
+
 const newVerification = new UserVerification({
 userId:_id,
-UniqueString:hasheduniqueString,
+VerificationCode:verificationCode,
 createdAt:Date.now(),
 expiresAT:Date.now()+ 21600000
 })
@@ -68,7 +84,7 @@ console.log("pending")
   .catch(err=>console.log("err in transporter 2 : "+err))
 
 
-})
+
 .catch( ()=>  console.log("somthing wrong happend"))
 
 }
@@ -84,13 +100,13 @@ async email => {
     }
 
 )
-
+app.use(express.urlencoded({ extended: false }));
+app.use(express.json());
   app.use(express.urlencoded({extended:false}))
   app.use(session({
 secret:process.env.SESSION_SECRET,
 resave: false,
 saveUninitialized:false
-
 }))
 
 app.use(flash())
@@ -98,18 +114,18 @@ app.use(passport.initialize())
 app.use(passport.session())
 
 app.post('/signup',async (req,res)=>{
-  let {password,email,name} = req.query  
+  let {password,email,phone} = req.body  
   try{
     const emailcheck =await user.exists({Email:email})
     
     if(emailcheck){
-      return res.send({message : "this email is already used",statues:404})
+      return res.send({message : "this email is already used",status:404})
   }
    
  const hashedpass = await bycrypt.hash(password,10)
  const User = new user({   
+  phone:phone,
   password:hashedpass,
-  Name:name,
   Email:email ,
   verified:false
 
@@ -126,7 +142,7 @@ status: 200
            })
   }catch(e){
     console.log(e)
-    res.send({message : "somthing went wrong please try again later",statues:404})
+    res.send({message : "somthing went wrong please try again later",status:404})
   }
 })
 app.get('/',async(req,res)=>{
@@ -134,28 +150,107 @@ app.get('/',async(req,res)=>{
  console.log(name.Name)
   res.send( name._id)
 })
+app.post('/forget-password', async (req, res) => {
+  console.log("sending code")
+  let { email } = req.body;
+    try {
+        const User = await user.findOne({ Email: email });
+        if (!User) {
+            return res.status(400).json({ error: "User with this email does not exist. " });
+        }
+        // Generate random 4-digit code
+        const verificationCode = Math.floor(1000 + Math.random() * 9000);
+        // Store the code associated with the user's email
+        User.resetPasswordCode = verificationCode;
+        await User.save();
 
+        // Send verification email
+        const mailOptions = {
+            to: User.Email,
+            from: process.env.AUTH_EMAIL,
+            subject: 'Password Reset Verification Code',
+            text: `Your verification code is: ${verificationCode}. This code is valid for 10 minutes.`
+        };
+        transport.sendMail(mailOptions, (err) => {
+            if (err) {
+                console.log(err);
+                return res.status(500).send({ error: 'Error sending verification email.' });
+            }
+            res.send({ message: 'Verification code sent to your email.' });
+        });
+    } catch (err) {
+        console.log(err);
+        res.send({ message: 'Server error. Please try again later.',status:404 });
+    }
+});
+
+// Verify code and reset password
+app.post('/Verify-code', async (req, res) => {
+    let { email, code } = req.body;
+    try {
+        const User = await user.findOne({ Email: email });
+        if (!User) {
+            return res.json({ message: "User with this email does not exist. ",status:404 });
+        }
+        // Verify the code
+        if (User.resetPasswordCode !== parseInt(code)) {
+            return res.json({ message: "Invalid verification code.",status:404 });
+        }
+        // Clear the code after successful verification
+        User.resetPasswordCode = null;
+        // Reset password
+        await User.save();
+        res.send({ message: 'code Verify.' });
+    } catch (err) {
+        console.log(err);
+        res.status(500).send({ error: 'Server error. Please try again later.' });
+  }
+});
+// Route to reset password
+app.post('/reset-password', async (req, res) => {
+    const { email, newPassword } = req.body;
+    
+    try {
+        // Find the user by email
+        const User = await user.findOne({ Email:email });
+        if (!User) {
+            return res.status(400).json({ error: "User with this email does not exist." });
+        }
+
+        // Hash the new password
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        User.password = hashedPassword;
+
+        // Save the updated user document
+        await User.save();
+
+        res.status(200).json({ message: "Password reset successfully." });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Server error. Please try again later." });
+    }
+});
 //email verify api
-app.get('/user/verify/:_id/:uniqueString',async(req,res)=>{
-  let {_id,uniqueString}=req.params
+app.get('/user/verify/:_id/:verificationCode',async(req,res)=>{
+  let {_id,verificationCode}=req.params
  await UserVerification.findOne({userId:_id})
   .then((result)=>{
     
 if(result){
   const{expiresAT} = result.expiresAT
-  const hasheduniqueString =result.UniqueString
+  const hasheduniqueString =result.resetPasswordCode 
 
   if(expiresAT<Date.now()){
     UserVerification.deleteOne({userId:_id})
     .then(result =>{
 user.deleteOne({userId:_id}
-  .then(res.send({message:'ling expired',status:200}))
+  .then(res.send({message:'link expired',status:200}))
   .catch(err => console.log(err)))
 
     } )
 
   }else{
-bycrypt.compare(uniqueString,hasheduniqueString)
+bycrypt.compare(verificationCode,hasheduniqueString)
 .then(result=>{
   if(result){
     console.log(_id)
@@ -171,17 +266,10 @@ bycrypt.compare(uniqueString,hasheduniqueString)
     console.log("invalid unigue string")
   }
 })
-
-
   }
-
-
 }else{console.log("account don't exist")}
-
-
   })
-  .catch((err)=>console.log(err))
-  
+  .catch((err)=>console.log(err)) 
 }
 
 )
@@ -195,10 +283,11 @@ bycrypt.compare(uniqueString,hasheduniqueString)
     })
 
 app.get('/login',(req,res)=>{
-  let{password,email}=req.query
+  let{password,email}=req.body
  user.findOne({Email:email})
  .then(((data)=>{
-  if(!data.verified){
+  console.log(req.body)  
+  if(!data.verified){ 
  res.send({message:"user isn't verified",
 status: 404})
   }else{res.redirect(`/verify?password=${password}&email=${email}`)}
@@ -209,6 +298,13 @@ app.get("/verify",passport.authenticate('local',{
   failureRedirect:'/loginfailed',
   failureMessage:true
 }))
+
+app.get('/emailverification',(req,res)=>{
+  let {email,code}=req.body
+  user.findOne({Email:email})
+  .then(result=>{res.redirect(`/user/verify/:${result[0]._id}/:${verificationCode}`)
+    })
+
 app.get('/blog',(req,res)=>{
   const Blog = new schems.blog({   
  title:req.query.title ,
@@ -230,12 +326,47 @@ app.get('/doctorsinfo',(req,res)=>{
  catch(e){console.log(e)}
   res.send('data accepted'+ doctoresinfo )
 })
-function checkauthenticated(req,res,next){
-if(req.isAuthenticated())
-{return next()}
-res.status(404).send("log in first")
 
+
+app.get('/verificationCode',(req,res)=>{
+ let {verificationCode}=req.query
+UserVerification.find({verificationCode:verificationCode})
+.then(result=>{res.redirect()})
+
+})
+
+//doctor dashborad
+
+app.get("/PatientList",async(req,res)=>{
+  const user = await req.user
+  const id = user._id
+   patient.find({userId: id}).then((result)=>{
+    res.send({result,status:200})
+ }).catch((err)=>{res.send({message:"something went wrong try again later in PatientList",status:404})
+console.log(err)})
+})
+
+app.post("/addPateint",async(req,res)=>{
+  const user = await req.user
+  const id = user._id
+let {name,phone,gender,age,address}=req.body
+const Patient = new patient({
+userId:id,
+phone:phone,
+Name:name,
+gender:gender,
+age:age,
+address:address,
+illness:false
+})
+Patient.save()
+.then((result)=>{console.log(result)
+ res.send({message:"added successfully",status:200})
 }
+ )
+  .catch((err)=>{console.log("err in adding the patient :"+ err)
+  res.send({message:"something went wrong try again later",status:404})})
+})
 
 //doctor dashborad
 
@@ -270,6 +401,16 @@ Patient.save()
   res.send({message:"something went wrong try again later",status:404})})
 })
 
+app.get("/deletePateint",async(req,res)=>{
+  const user = await req.user
+  const id = user._id
+ const patient_id = req.body.id
+patient.deleteOne({_id:patient_id}).then(res.send({message:"deleted successfully",status:200}))
+.catch((err)=>{console.log("err in deleteing the patient :"+ err)
+res.send({message:"something went wrong try again later",status:404})
+})
+})
+
 
 app.get("/deletePateint",async(req,res)=>{
   const user = await req.user
@@ -283,6 +424,7 @@ res.send({message:"something went wrong try again later",status:404})
 
 app.post("/editPateint",async(req,res)=>{
   let{name,phone,gender,age,address,id}=req.query
+
 
   patient.findByIdAndUpdate(id,{
     userId:id,
@@ -300,7 +442,11 @@ app.post("/editPateint",async(req,res)=>{
 app.get("/findPatient",async(req,res)=>{
   const user = await req.user
   const id = user._id
-  const searchparam= req.query.param
+
+  const searchparam= req.body.param
+
+  
+
   const regex = new RegExp(`^${searchparam}`, 'i')
   const query = {
     userId:id,
@@ -340,5 +486,69 @@ app.delete('/deleteall',async(req,res)=>{
   const user = await req.user
   const id = user._id
 patient.deleteMany({userId:id}).then(res.send("all deleted"))
+
+})
+app.post("/profile",upload.single('image'),async (req,res)=>{  
+  const user = await req.user
+  if(user._id){
+  console.log("session started")
+  }else{console.log("login first")
+   res.send("login first")}
+   const id = user._id
+    if (!req.file) {
+      return res.status(404).send('No file uploaded.');
+    }
+    //console.log(req.file)
+    let {name,address,phone, startTime, endTime, step,workdays}=req.query
+    const Profile = new profile({
+      userId:id,
+      Name:name, 
+      address:address,
+      phone:phone,
+      img:"",
+      workdays:workdays,
+      startTime: startTime, endTime:endTime, step:step
+    })
+    Profile.save()
+.catch(err=>{console.log(err)
+  return res.send({message:"somthing went wrong",status:404})
+})
+     authorize().then(result =>{ uploadfile(result,req.file,Profile._id)
+      res.send({message:"your profile id done",status:200})})
+    .catch( error=>{  console.log('Error uploading file to Google Drive:', error);
+      res.status(404).send('Internal Server Error')})
+    
+  
+  //const daysArray = workdays.split(', ')
+
+    
+
+    const now = new Date();
+    const currentDayOfWeek = now.getDay();
+const weeklySchedules = await generateWeeklySchedules(id,currentDayOfWeek, startTime, endTime, step,workdays );
+
+// Save the generated weekly schedules to MongoDB
+Schedule.insertMany(weeklySchedules)
+  .then(() => {
+    console.log('Weekly schedules saved successfully');
+  })
+  .catch((err) => {
+    console.error('Failed to save weekly schedules', err)
+  });
+  
+
+})
+
+app.get('/test',(req,res)=>{
+  
+  try{
+  
+  res.status(200).send("test successfully",AutdSchedule())
+  }catch{
+    res.status(404).send("test went wrong")
+
+  }
+})
+
 
 })

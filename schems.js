@@ -13,10 +13,9 @@ body: {type: String,
 
 const UserVerificationschema = new schema({
 userId:String,
-UniqueString:String,
+verificationCode:Number,
 createdAt:Date,
-expiresAT:Date,
-
+expiresAT:Date
 })
 ///////////
 const doctors =new schema({
@@ -39,11 +38,6 @@ password:{
         type: String,
         requird : true
 },
-phone:{required:true,
-type: Number },
-Name:{ type: String,
-    requird : true},
-
 Email:{ type: String,    
     requird : true},
 verified:Boolean
@@ -62,6 +56,29 @@ const Patientschema = new schema({
     score:{type: Number}
 })
 
+const profileschema= new schema({
+    img:String,
+    userId :String,
+    phone: { type: String},
+    Name: { type: String, required: true },
+    address: { type: String },
+    workdays:{type:Array},
+    startTime:String, endTime:String, step:String
+})
+const weeklyScheduleSchema = new mongoose.Schema({
+    userId :String,
+    dayOfWeek: String,
+    dayOfMonth: Number,
+    timeSlots: [
+      {
+        time: String,
+        available: Boolean
+      }
+    ],
+    available: Boolean
+  });
+  
+const Schedule = mongoose.model('WeeklySchedule', weeklyScheduleSchema);
 
 const patient=mongoose.model("Pateints",Patientschema)
 const blog =mongoose.model("blog",blogschema)
@@ -69,4 +86,7 @@ const Doctors = mongoose.model("Doctorsinfo",doctors)
 const user = mongoose.model("user",User)
 const UserVerification = mongoose.model("UserVerification",UserVerificationschema )
 
+const profile = mongoose.model("profile",profileschema)
+module.exports ={blog,Doctors,user,UserVerification,patient,profile,Schedule}
 module.exports ={blog,Doctors,user,UserVerification,patient}
+

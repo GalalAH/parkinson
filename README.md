@@ -10,7 +10,13 @@ post /sinup
         Statues: int
 }
 get /login
+
+Req: {email: sTring
+passwoerd: sTring
+}
+
 Req: nothing
+
 Res:{
 If (successfully) =>UserId:string
 Message:string
