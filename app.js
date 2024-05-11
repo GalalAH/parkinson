@@ -112,7 +112,7 @@ app.use(passport.initialize())
 app.use(passport.session())
 
 app.post('/signup',async (req,res)=>{
-  let {password,email,phone} = req.body  
+  let {password,email,name} = req.body  
   try{
     const emailcheck =await user.exists({Email:email})
     
@@ -122,7 +122,7 @@ app.post('/signup',async (req,res)=>{
    
  const hashedpass = await bycrypt.hash(password,10)
  const User = new user({   
-  phone:phone,
+  username:name,
   password:hashedpass,
   Email:email ,
   verified:false

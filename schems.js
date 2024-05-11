@@ -34,6 +34,7 @@ requird : true}
 
 
 const User = new schema({
+username:string,
 password:{
         type: String,
         requird : true
