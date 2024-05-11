@@ -1,7 +1,7 @@
 if(process.env.NODE_ENV!=="production"){
   require('dotenv').config()
 }
-
+//const schedule = require('node-schedule');
 const {generateWeeklySchedules,AutdSchedule}=require("./apoinmment")
 const multer = require('multer');
 const storage = multer.memoryStorage();
@@ -40,39 +40,29 @@ const transport =nodemailer.createTransport({
 //email sender details  n                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
 
 
-const  sendverificationemail = ({_id,Email},res)=>{
+const  sendverificationemail = async (id,Email,res)=>{
 const  currentUrl= process.env.URL
-const verificationCode = Math.floor(1000 + Math.random() * 9000);
+const Code = await Math.floor(1000 + Math.random() * 9000).toString();
+const hashedverificationCode= await bycrypt.hash(Code,10)
 const mailOptions={
 from:process.env.AUTH_EMAIL,
-
 to:Email,
 subject:"Verify Your email",
 html:`<p>verify your eamil address to complete the singup and login into your account.</p><p>this is the verficationcode 
- ${verificationCode} <b> expires in 6 hours</b>.</p>`
+ ${Code} <b> expires in 6 hours</b>.</p>`
 
 }
 
 
-const schedule = require('node-schedule');
-
-
-
-// Define a schedule to run at midnight (beginning of a new day)
-const midnightTask = schedule.scheduleJob('0 0 * * *', () => {
-  AutdSchedule()
-});
-
-
 const newVerification = new UserVerification({
-userId:_id,
-VerificationCode:verificationCode,
+userId:id,
+verificationCode:hashedverificationCode,
 createdAt:Date.now(),
 expiresAT:Date.now()+ 21600000
 })
 newVerification.save()
 .then((result)=>{
-  //console.log(result)
+  console.log(result)
   transport.sendMail(mailOptions)
   .then(()=>{
 
@@ -135,7 +125,7 @@ app.post('/signup',async (req,res)=>{
 User.save()
 .then((result)=>{
   
-sendverificationemail(result,res)
+sendverificationemail(result._id,email,res)
 })
 res.send({message:"singup successfully",
 status: 200
@@ -230,78 +220,14 @@ app.post('/reset-password', async (req, res) => {
     }
 });
 //email verify api
-app.get('/user/verify/:_id/:verificationCode',async(req,res)=>{
-  let {_id,verificationCode}=req.params
- await UserVerification.findOne({userId:_id})
-  .then((result)=>{
-    
-if(result){
-  const{expiresAT} = result.expiresAT
-  const hasheduniqueString =result.resetPasswordCode 
 
-  if(expiresAT<Date.now()){
-    UserVerification.deleteOne({userId:_id})
-    .then(result =>{
-user.deleteOne({userId:_id}
-  .then(res.send({message:'link expired',status:200}))
-  .catch(err => console.log(err)))
-
-    } )
-
-  }else{
-bycrypt.compare(verificationCode,hasheduniqueString)
-.then(result=>{
-  if(result){
-    console.log(_id)
-    user.updateOne({_id:_id},{verified:true})
-      .then(()=>{
-        UserVerification.deleteOne({_id})
-          .then(()=>{
-        res.json({message :"user verified "})})
-        .catch(err=>{console.log(err)})
-          })
-      .catch(err=>{console.log('err updateing the  , thr err ' +err)})
- }else{
-    console.log("invalid unigue string")
-  }
-})
-  }
-}else{console.log("account don't exist")}
-  })
-  .catch((err)=>console.log(err)) 
-}
-
-)
-  app.get('/logins',async(req,res)=>{
-   const user = await req.user
-  res.send({message:"verified",status:200,UserId:user._id}
-  ) })
-  app.get('/loginfailed',(req,res)=>{
-    res.send({message:req.session.messages,
-    status:404})
-    })
-
-app.get('/login',(req,res)=>{
-  let{password,email}=req.body
- user.findOne({Email:email})
- .then(((data)=>{
-  console.log(req.body)  
-  if(!data.verified){ 
- res.send({message:"user isn't verified",
-status: 404})
-  }else{res.redirect(`/verify?password=${password}&email=${email}`)}
- }))}
-)
-app.get("/verify",passport.authenticate('local',{
-  successRedirect:'/logins',
-  failureRedirect:'/loginfailed',
-  failureMessage:true
-}))
 
 app.get('/emailverification',(req,res)=>{
   let {email,code}=req.body
   user.findOne({Email:email})
-  .then(result=>{res.redirect(`/user/verify/:${result[0]._id}/:${verificationCode}`)
+  .then(result=>{
+    const _id=result._id
+    res.redirect(`/user/verify/:${_id}/:${code}`)
     })
 
 app.get('/blog',(req,res)=>{
@@ -326,13 +252,6 @@ app.get('/doctorsinfo',(req,res)=>{
   res.send('data accepted'+ doctoresinfo )
 })
 
-
-app.get('/verificationCode',(req,res)=>{
- let {verificationCode}=req.query
-UserVerification.find({verificationCode:verificationCode})
-.then(result=>{res.redirect()})
-
-})
 
 //doctor dashborad
 
@@ -551,3 +470,73 @@ app.get('/test',(req,res)=>{
 
 
 })
+app.get('/user/verify/:_id/:verificationCode',async(req,res)=>{
+  let {_id,verificationCode}=req.params
+  console.log("id",_id)
+  console.log("verificationCode",verificationCode)
+   await UserVerification.findOne({userId:_id})
+  .then((result)=>{
+    console.log("result",result)  
+if(result){
+  const{expiresAT} = result.expiresAT
+  const hashedverificationCode =result.verificationCode
+
+  if(expiresAT<Date.now()){
+    UserVerification.deleteOne({userId:_d})
+    .then(result =>{
+user.deleteOne({userId:_id}
+  .then(res.send({message:'link expired',status:200}))
+  .catch(err => console.log(err)))
+
+    } )
+
+  }else{
+bycrypt.compare(verificationCode,hashedverificationCode)
+.then(result=>{
+  if(result){
+    console.log(_id)
+    user.updateOne({_id:_id},{verified:true})
+      .then(()=>{
+        UserVerification.deleteOne({_id})
+          .then(()=>{
+        res.json({message :"user verified "})})
+        .catch(err=>{console.log(err)})
+          })
+      .catch(err=>{console.log('err updateing the  , thr err ' +err)})
+ }else{
+    console.log("invalid unigue string")
+  }
+})
+  }
+}else{console.log("account don't exist")
+res.send({message:"account don't exist",staus:404})}
+  })
+  .catch((err)=>console.log(err)) 
+}
+
+)
+  app.get('/logins',async(req,res)=>{
+   const user = await req.user
+  res.send({message:"verified",status:200,UserId:user._id}
+  ) })
+  app.get('/loginfailed',(req,res)=>{
+    res.send({message:req.session.messages,
+    status:404})
+    })
+
+app.get('/login',(req,res)=>{
+  let{password,email}=req.body
+ user.findOne({Email:email})
+ .then(((data)=>{
+  console.log(req.body)  
+  if(!data.verified){ 
+ res.send({message:"user isn't verified",
+status: 404})
+  }else{res.redirect(`/verify?password=${password}&email=${email}`)}
+ }))}
+)
+app.get("/verify",passport.authenticate('local',{
+  successRedirect:'/logins',
+  failureRedirect:'/loginfailed',
+  failureMessage:true
+}))

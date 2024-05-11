@@ -12,8 +12,10 @@ body: {type: String,
 // user Verification 
 
 const UserVerificationschema = new schema({
-userId:String,
-verificationCode:Number,
+userId:{type: mongoose.Schema.Types.ObjectId,
+    ref: 'user',
+    required: true},
+verificationCode:String,
 createdAt:Date,
 expiresAT:Date
 })
@@ -34,7 +36,7 @@ requird : true}
 
 
 const User = new schema({
-username:string,
+username:String,
 password:{
         type: String,
         requird : true
@@ -89,5 +91,5 @@ const UserVerification = mongoose.model("UserVerification",UserVerificationschem
 
 const profile = mongoose.model("profile",profileschema)
 module.exports ={blog,Doctors,user,UserVerification,patient,profile,Schedule}
-module.exports ={blog,Doctors,user,UserVerification,patient}
+
 
