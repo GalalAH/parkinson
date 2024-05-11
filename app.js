@@ -299,7 +299,7 @@ app.get("/verify",passport.authenticate('local',{
 app.get('/emailverification',(req,res)=>{
   let {email,code}=req.body
   user.findOne({Email:email})
-  .then(result=>{res.redirect(`/user/verify/:${result[0]._id}/:${Code}`)
+  .then(result=>{res.redirect(`/user/verify/:${result._id}/:${Code}`)
     })
 
 app.get('/blog',(req,res)=>{
