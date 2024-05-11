@@ -145,10 +145,9 @@ status: 200
     res.send({message : "somthing went wrong please try again later",status:404})
   }
 })
-app.get('/',async(req,res)=>{
- const name = await req.user
- console.log(name.Name)
-  res.send( name._id)
+app.get('/',(req,res)=>{
+ 
+  res.send("server on render started ")
 })
 app.post('/forget-password', async (req, res) => {
   console.log("sending code")
