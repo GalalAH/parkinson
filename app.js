@@ -485,7 +485,7 @@ app.delete('/deleteall',async(req,res)=>{
 patient.deleteMany({userId:id}).then(res.send("all deleted"))
 
 })
-app.post("/profile",upload.single('image'),async (req,res)=>{  
+app.post('/profile',upload.single('image'),async (req,res)=>{  
   const user = await req.user
   if(user._id){
   console.log("session started")
