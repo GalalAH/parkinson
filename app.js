@@ -52,14 +52,14 @@ html:`<p>verify your eamil address to complete the singup and login into your ac
 }
 
 
-const schedule = require('node-schedule');
+//const schedule = require('node-schedule');
 
 
 
 // Define a schedule to run at midnight (beginning of a new day)
-const midnightTask = schedule.scheduleJob('0 0 * * *', () => {
-  AutdSchedule()
-});
+// const midnightTask = schedule.scheduleJob('0 0 * * *', () => {
+//   AutdSchedule()
+// });
 
 
 const newVerification = new UserVerification({
