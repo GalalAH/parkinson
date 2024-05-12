@@ -1,7 +1,9 @@
-if(process.env.NODE_ENV!=="production"){
-  require('dotenv').config()
-}
+
 //const schedule = require('node-schedule');
+=======
+
+require('dotenv').config()
+
 const {generateWeeklySchedules,AutdSchedule}=require("./apoinmment")
 const multer = require('multer');
 const storage = multer.memoryStorage();
@@ -52,6 +54,18 @@ html:`<p>verify your eamil address to complete the singup and login into your ac
  ${Code} <b> expires in 6 hours</b>.</p>`
 
 }
+
+
+
+//const schedule = require('node-schedule');
+
+
+
+// Define a schedule to run at midnight (beginning of a new day)
+// const midnightTask = schedule.scheduleJob('0 0 * * *', () => {
+//   AutdSchedule()
+// });
+
 
 
 const newVerification = new UserVerification({
@@ -225,6 +239,7 @@ app.post('/reset-password', async (req, res) => {
 app.get('/emailverification',(req,res)=>{
   let {email,code}=req.body
   user.findOne({Email:email})
+
   .then(result=>{
     const _id=result._id
     res.redirect(`/user/verify?_id=${_id}&verificationCode=${code}`)
@@ -406,7 +421,7 @@ app.delete('/deleteall',async(req,res)=>{
 patient.deleteMany({userId:id}).then(res.send("all deleted"))
 
 })
-app.post("/profile",upload.single('image'),async (req,res)=>{  
+app.post('/profile',upload.single('image'),async (req,res)=>{  
   const user = await req.user
   if(user._id){
   console.log("session started")
