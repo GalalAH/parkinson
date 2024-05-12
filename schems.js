@@ -12,8 +12,8 @@ body: {type: String,
 // user Verification 
 
 const UserVerificationschema = new schema({
-userId:String,
-verificationCode:Number,
+userId:{ type: String, required: true },
+verificationCode:String,
 createdAt:Date,
 expiresAT:Date
 })
@@ -33,16 +33,42 @@ requird : true}
 //  user shema
 
 
-const User = new schema({
-username:String,
-password:{
-        type: String,
-        requird : true
-},
-Email:{ type: String,    
-    requird : true},
-verified:Boolean
-})
+
+const User = new mongoose.Schema({
+    password: {
+      type: String,
+      required: true
+    },
+    username: {
+      type: String,
+      required: true
+    },
+    Email: {
+      type: String,
+      required: true,
+      unique: true
+    },
+    verified: {
+      type: Boolean,
+      default: false
+    },
+    phone: {
+      type: String,
+    
+    },
+    forgetpassword: {
+      type: String  // Assuming this is a string field
+    },
+    resetPasswordCode: {
+      type: Number  // Assuming this is a numeric field
+    }
+  });
+  
+  // Define schema for the 'blog' collection (if needed)
+  const blogSchema = new mongoose.Schema({
+    // Define fields for your blog schema as needed
+  })
+
 
 //pateints schema
 
@@ -89,5 +115,5 @@ const UserVerification = mongoose.model("UserVerification",UserVerificationschem
 
 const profile = mongoose.model("profile",profileschema)
 module.exports ={blog,Doctors,user,UserVerification,patient,profile,Schedule}
-module.exports ={blog,Doctors,user,UserVerification,patient}
+
 

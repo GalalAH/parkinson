@@ -11,17 +11,63 @@ post /sinup
 }
 get /login
 
-Req: {email: sTring
-passwoerd: sTring
+Req: {email: sTring,
+passwoerd: sTring,
+UserId:id, the doctor id 
+Profilecheck:bolean if false proceed to profile makeing
 }
-
-Req: nothing
 
 Res:{
 If (successfully) =>UserId:string
 Message:string
 Statues:int
 }
+
+get /emailverification
+req : {
+
+ code: number,
+email":String
+}
+res:{
+message:string,
+status:number
+}
+post /forget-password
+
+
+req:{
+email:String
+
+
+}
+
+res:{
+     
+    message: String
+    status: number
+
+}
+post /Verify-code
+
+req{
+email:String,
+code:number
+}
+res:{
+     
+    message: String
+    status: number
+
+}
+post /reset-password
+req{
+email:String
+newPassword:String
+
+}
+
+
 get PatientList
     req:nothing
     res:"result": [
@@ -93,3 +139,21 @@ res:{ "result": [
 }
     or
     {message: string,status:int}
+
+
+    post /profile
+    req:{
+
+        name:String,
+        address:String,
+        phone:String, 
+        startTime:String,
+        endTime,:String
+        step:String,
+        workdays:array of String
+
+    }
+    res:{
+    message: string
+    ,status:int
+    }
