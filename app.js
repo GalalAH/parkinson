@@ -40,7 +40,7 @@ const transport =nodemailer.createTransport({
 //email sender details  n                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
 
 
-const  sendverificationemail = async (id,Email,res)=>{
+const  sendverificationemail = async ({_id,Email},res)=>{
 const  currentUrl= process.env.URL
 const Code = await Math.floor(1000 + Math.random() * 9000).toString();
 const hashedverificationCode= await bycrypt.hash(Code,10)
@@ -55,7 +55,7 @@ html:`<p>verify your eamil address to complete the singup and login into your ac
 
 
 const newVerification = new UserVerification({
-userId:id,
+userId:_id,
 verificationCode:hashedverificationCode,
 createdAt:Date.now(),
 expiresAT:Date.now()+ 21600000
@@ -125,7 +125,7 @@ app.post('/signup',async (req,res)=>{
 User.save()
 .then((result)=>{
   
-sendverificationemail(result._id,email,res)
+sendverificationemail(result,res)
 })
 res.send({message:"singup successfully",
 status: 200
@@ -163,9 +163,9 @@ app.post('/forget-password', async (req, res) => {
         transport.sendMail(mailOptions, (err) => {
             if (err) {
                 console.log(err);
-                return res.status(500).send({ error: 'Error sending verification email.' });
+                return res.send({ error: 'Error sending verification email.', status:404 });
             }
-            res.send({ message: 'Verification code sent to your email.' });
+            res.send({ message: 'Verification code sent to your email.',status:200 });
         });
     } catch (err) {
         console.log(err);
@@ -189,10 +189,10 @@ app.post('/Verify-code', async (req, res) => {
         User.resetPasswordCode = null;
         // Reset password
         await User.save();
-        res.send({ message: 'code Verify.' });
+        res.send({ message: 'code Verified.',status:200 });
     } catch (err) {
         console.log(err);
-        res.status(500).send({ error: 'Server error. Please try again later.' });
+        res.send({ error: 'Server error. Please try again later.',status:404  });
   }
 });
 // Route to reset password
@@ -203,20 +203,20 @@ app.post('/reset-password', async (req, res) => {
         // Find the user by email
         const User = await user.findOne({ Email:email });
         if (!User) {
-            return res.status(400).json({ error: "User with this email does not exist." });
+            return res.json({ error: "User with this email does not exist." ,status:404 });
         }
 
         // Hash the new password
-        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        const hashedPassword = await bycrypt.hash(newPassword, 10);
         User.password = hashedPassword;
 
         // Save the updated user document
         await User.save();
 
-        res.status(200).json({ message: "Password reset successfully." });
+        res.send({ message: "Password reset successfully.",status:200 });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ error: "Server error. Please try again later." });
+        res.send({ error: "Server error. Please try again later.",status:404  });
     }
 });
 //email verify api
@@ -227,7 +227,7 @@ app.get('/emailverification',(req,res)=>{
   user.findOne({Email:email})
   .then(result=>{
     const _id=result._id
-    res.redirect(`/user/verify/:${_id}/:${code}`)
+    res.redirect(`/user/verify?_id=${_id}&verificationCode=${code}`)
     })
 
 app.get('/blog',(req,res)=>{
@@ -470,11 +470,11 @@ app.get('/test',(req,res)=>{
 
 
 })
-app.get('/user/verify/:_id/:verificationCode',async(req,res)=>{
-  let {_id,verificationCode}=req.params
+app.get('/user/verify',async(req,res)=>{
+  let {_id,verificationCode}=req.query
   console.log("id",_id)
   console.log("verificationCode",verificationCode)
-   await UserVerification.findOne({userId:_id})
+   await UserVerification.findOne({userId : _id})
   .then((result)=>{
     console.log("result",result)  
 if(result){
@@ -494,12 +494,12 @@ user.deleteOne({userId:_id}
 bycrypt.compare(verificationCode,hashedverificationCode)
 .then(result=>{
   if(result){
-    console.log(_id)
+  
     user.updateOne({_id:_id},{verified:true})
       .then(()=>{
-        UserVerification.deleteOne({_id})
+        UserVerification.deleteOne({userId:_id})
           .then(()=>{
-        res.json({message :"user verified "})})
+        res.send({message :"user verified ",status:200})})
         .catch(err=>{console.log(err)})
           })
       .catch(err=>{console.log('err updateing the  , thr err ' +err)})
@@ -517,10 +517,16 @@ res.send({message:"account don't exist",staus:404})}
 )
   app.get('/logins',async(req,res)=>{
    const user = await req.user
-  res.send({message:"verified",status:200,UserId:user._id}
-  ) })
+   const id = user._id
+    await profile.exists({userId:id})
+   .then( profilecheck=>{if(profilecheck){
+    res.send({message:"verified",status:200,UserId:id,Profilecheck:true}
+    )}else{res.send({message:"verified",status:200,UserId:id,Profilecheck:false})}})
+  .catch(err=>{console.log(err)
+    res.send({message:"internal error  try again later",status:404})})
+ })
   app.get('/loginfailed',(req,res)=>{
-    res.send({message:req.session.messages,
+    res.send({message:req.session.messages[0],
     status:404})
     })
 
