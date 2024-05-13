@@ -495,7 +495,7 @@ Schedule.insertMany(weeklySchedules)
 
 
 app.get('/user/verify',async(req,res)=>{
-  let {_id,verificationCode}=req.body 
+  let {_id,verificationCode}=req.query 
   console.log("id",_id)
   console.log("verificationCode",verificationCode)
    await UserVerification.findOne({userId : _id})
