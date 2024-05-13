@@ -271,9 +271,9 @@ app.post('/reset-password', async (req, res) => {
 //email verify api
 
 
-app.post('/emailverification',(req,res)=>{
+app.post('/emailverification',async(req,res)=>{
   let {email,code}=req.body
-  user.findOne({Email:email})
+ await user.findOne({Email:email})
 
   .then(result=>{
     const _id=result._id
