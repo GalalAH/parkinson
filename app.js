@@ -1,7 +1,10 @@
 
-require('dotenv').config()
 
 //const schedule = require('node-schedule');
+
+
+require('dotenv').config()
+
 const {generateWeeklySchedules,AutdSchedule}=require("./apoinmment")
 const multer = require('multer');
 const storage = multer.memoryStorage();
@@ -52,6 +55,18 @@ html:`<p>verify your eamil address to complete the singup and login into your ac
  ${Code} <b> expires in 6 hours</b>.</p>`
 
 }
+
+
+
+//const schedule = require('node-schedule');
+
+
+
+// Define a schedule to run at midnight (beginning of a new day)
+// const midnightTask = schedule.scheduleJob('0 0 * * *', () => {
+//   AutdSchedule()
+// });
+
 
 
 const newVerification = new UserVerification({
@@ -259,6 +274,7 @@ app.post('/reset-password', async (req, res) => {
 app.post('/emailverification',(req,res)=>{
   let {email,code}=req.body
   user.findOne({Email:email})
+
   .then(result=>{
     const _id=result._id
     res.redirect(`/user/verify?_id=${_id}&verificationCode=${code}`)
@@ -512,9 +528,10 @@ bycrypt.compare(verificationCode,hashedverificationCode)
       .catch(err=>{console.log('err updateing the  , thr err ' +err)})
  }else{
     console.log("invalid unigue string")
+
     res.send({message :"invalid code ",status:404})
   } 
-})
+
   }
 }else{console.log("account don't exist")
 res.send({message:"account don't exist",staus:404})}
@@ -554,4 +571,6 @@ app.post("/edit-profile",upload.single('image'),async(req,res)=>{
     return res.send({message:"something went wrong try again later",status:404})
 })
 
+
   })
+
