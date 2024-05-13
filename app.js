@@ -515,7 +515,7 @@ user.deleteOne({userId:_id}
     } )
 
   }else{
-bbycrypt.compare(verificationCode,hashedverificationCode)
+bycrypt.compare(verificationCode,hashedverificationCode)
 .then(result=>{
   if(result){
   
