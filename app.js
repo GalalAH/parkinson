@@ -16,7 +16,7 @@ const express = require('express')
 
 const {profile,user,UserVerification,patient,Schedule} =require("./schems")
 
-
+const verify =require("./verification")
 const app = express()   
 const bycrypt =require("bcrypt")
 const mongoose = require("mongoose")
@@ -27,7 +27,8 @@ mongoose.connect(dbURI)
 }))
 const login = require('./config/login-config')
 const passport = require('passport')
-const session = require('express-session')
+const session = require('express-session');
+const verifiy = require('./verification');
 const transport =nodemailer.createTransport({
   service:'gmail',
   auth:{
@@ -276,7 +277,9 @@ app.post('/emailverification',async(req,res)=>{
   .then(result=>{
     console.log(result)
     const _id=result._id
-    res.redirect(`/user/verify?_id=${_id}&verificationCode=${code}`)
+    verifiy(_id,code,res)
+    }).catch(err=>{conole.log(err)
+    res.send({message:"cannot find the user",status:404})    
     })
 
   })
