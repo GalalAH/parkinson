@@ -1,6 +1,6 @@
-if(process.env.NODE_ENV!=="production"){
-  require('dotenv').config()
-}
+
+require('dotenv').config()
+
 //const schedule = require('node-schedule');
 const {generateWeeklySchedules,AutdSchedule}=require("./apoinmment")
 const multer = require('multer');
@@ -14,12 +14,12 @@ const express = require('express')
 const {profile,user,UserVerification,patient,Schedule} =require("./schems")
 
 
-const app = express()
+const app = express()   
 const bycrypt =require("bcrypt")
 const mongoose = require("mongoose")
 const dbURI= process.env.DB_URI
 mongoose.connect(dbURI)
-.then(app.listen(process.env.PORT,()=>{
+.then(app.listen(process.env.PORT||5050,()=>{
   console.log('server is running ')
 }))
 const login = require('./config/login-config')
@@ -90,8 +90,8 @@ async email => {
     }
 
 )
-app.use(express.urlencoded({ extended: false }));
-app.use(express.json());
+
+  app.use(express.json());
   app.use(express.urlencoded({extended:false}))
   app.use(session({
 secret:process.env.SESSION_SECRET,
@@ -135,6 +135,40 @@ status: 200
     res.send({message : "somthing went wrong please try again later",status:404})
   }
 })
+
+
+app.get('/logins',async(req,res)=>{
+  const user = await req.user
+  const id = user._id
+   await profile.exists({userId:id})
+  .then( profilecheck=>{if(profilecheck){
+   res.send({message:"verified",status:200,UserId:id,Profilecheck:true}
+   )}else{res.send({message:"verified",status:200,UserId:id,Profilecheck:false})}})
+ .catch(err=>{console.log(err)
+   res.send({message:"internal error  try again later",status:404})})
+})
+ app.get('/loginfailed',(req,res)=>{
+   res.send({message:req.session.messages[0],
+   status:404})
+   })
+
+app.post('/login',(req,res)=>{
+ let{password,email}=req.body
+user.findOne({Email:email})
+.then(((data)=>{
+ console.log(req.body)  
+ if(!data.verified){ 
+res.send({message:"user isn't verified",
+status: 404})
+ }else{res.redirect(`/verify?password=${password}&email=${email}`)}
+}))}
+)
+app.get("/verify",passport.authenticate('local',{
+ successRedirect:'/logins',
+ failureRedirect:'/loginfailed',
+ failureMessage:true
+}))
+
 app.get('/',(req,res)=>{
  
   res.send("server on render started ")
@@ -222,7 +256,7 @@ app.post('/reset-password', async (req, res) => {
 //email verify api
 
 
-app.get('/emailverification',(req,res)=>{
+app.post('/emailverification',(req,res)=>{
   let {email,code}=req.body
   user.findOne({Email:email})
   .then(result=>{
@@ -230,32 +264,10 @@ app.get('/emailverification',(req,res)=>{
     res.redirect(`/user/verify?_id=${_id}&verificationCode=${code}`)
     })
 
-app.get('/blog',(req,res)=>{
-  const Blog = new schems.blog({   
- title:req.query.title ,
- body:req.query.body
   })
-  Blog.save()
-  res.send('data accepted'+ Blog)
-})
-app.get('/doctorsinfo',(req,res)=>{
-  
-  const doctoresinfo = new Doctors({   
- img:req.query.img ,
- name:req.query.name,
- role:req.query.role, 
- address:req.query.address
-  })
-  try{
-    doctoresinfo.save()}
- catch(e){console.log(e)}
-  res.send('data accepted'+ doctoresinfo )
-})
-
-
 //doctor dashborad
 
-app.get("/PatientList",async(req,res)=>{
+app.post("/PatientList",async(req,res)=>{
   const user = await req.user
   const id = user._id
    patient.find({userId: id}).then((result)=>{
@@ -288,7 +300,7 @@ Patient.save()
 
 //doctor dashborad
 
-app.get("/PatientList",async(req,res)=>{
+app.post("/PatientList",async(req,res)=>{
   const user = await req.user
   const id = user._id
    patient.find({userId: id}).then((result)=>{
@@ -300,7 +312,7 @@ console.log(err)})
 app.post("/addPateint",async(req,res)=>{
   const user = await req.user
   const id = user._id
-let {name,phone,gender,age,address}=req.query
+let {name,phone,gender,age,address}=req.body 
 const Patient = new patient({
 userId:id,
 phone:phone,
@@ -319,7 +331,7 @@ Patient.save()
   res.send({message:"something went wrong try again later",status:404})})
 })
 
-app.get("/deletePateint",async(req,res)=>{
+app.post("/deletePateint",async(req,res)=>{
   const user = await req.user
   const id = user._id
  const patient_id = req.body.id
@@ -330,10 +342,10 @@ res.send({message:"something went wrong try again later",status:404})
 })
 
 
-app.get("/deletePateint",async(req,res)=>{
+app.post("/deletePateint",async(req,res)=>{
   const user = await req.user
   const id = user._id
- const patient_id = req.query.id
+ const patient_id = req.body .id
 patient.deleteOne({_id:patient_id}).then(res.send({message:"deleted successfully",status:200}))
 .catch((err)=>{console.log("err in deleteing the patient :"+ err)
 res.send({message:"something went wrong try again later",status:404})
@@ -341,10 +353,10 @@ res.send({message:"something went wrong try again later",status:404})
 })
 
 app.post("/editPateint",async(req,res)=>{
-  let{name,phone,gender,age,address,id}=req.query
+  let{name,phone,gender,age,address,id}=req.body 
 
 
-  patient.findByIdAndUpdate(id,{
+  patient.findOneAndUpdate({_id,id},{
     userId:id,
     phone:phone,
     Name:name,
@@ -352,12 +364,12 @@ app.post("/editPateint",async(req,res)=>{
     age:age,
     address:address,
   
-    }).then((result)=>{res.send({result,status:200})})
-    .catch((err)=>{console.log("err in deleteing the patient :"+ err)
+    }).then((result)=>{res.send({message:"edited successfully",status:200})})
+    .catch((err)=>{console.log("err in editing the patient :"+ err)
        res.send({message:"something went wrong try again later",status:404})
 
 })})
-app.get("/findPatient",async(req,res)=>{
+app.post("/findPatient",async(req,res)=>{
   const user = await req.user
   const id = user._id
 
@@ -406,7 +418,7 @@ app.delete('/deleteall',async(req,res)=>{
 patient.deleteMany({userId:id}).then(res.send("all deleted"))
 
 })
-app.post("/profile",upload.single('image'),async (req,res)=>{  
+app.post('/profile',upload.single('image'),async (req,res)=>{  
   const user = await req.user
   if(user._id){
   console.log("session started")
@@ -432,14 +444,9 @@ app.post("/profile",upload.single('image'),async (req,res)=>{
   return res.send({message:"somthing went wrong",status:404})
 })
      authorize().then(result =>{ uploadfile(result,req.file,Profile._id)
-      res.send({message:"your profile id done",status:200})})
+     })
     .catch( error=>{  console.log('Error uploading file to Google Drive:', error);
-      res.status(404).send('Internal Server Error')})
-    
-  
-  //const daysArray = workdays.split(', ')
-
-    
+      return res.send({message:'Internal Server Error',status:404})})
 
     const now = new Date();
     const currentDayOfWeek = now.getDay();
@@ -449,6 +456,7 @@ const weeklySchedules = await generateWeeklySchedules(id,currentDayOfWeek, start
 Schedule.insertMany(weeklySchedules)
   .then(() => {
     console.log('Weekly schedules saved successfully');
+    res.send({message:"your profile id done",status:200})
   })
   .catch((err) => {
     console.error('Failed to save weekly schedules', err)
@@ -457,21 +465,20 @@ Schedule.insertMany(weeklySchedules)
 
 })
 
-app.get('/test',(req,res)=>{
+// app.post('/test',(req,res)=>{
   
-  try{
+//   try{
   
-  res.status(200).send("test successfully",AutdSchedule())
-  }catch{
-    res.status(404).send("test went wrong")
+//   res.status(200).send("test successfully",AutdSchedule())
+//   }catch{
+//     res.status(404).send("test went wrong")
 
-  }
-})
+//   }
+// })
 
 
-})
 app.get('/user/verify',async(req,res)=>{
-  let {_id,verificationCode}=req.query
+  let {_id,verificationCode}=req.body 
   console.log("id",_id)
   console.log("verificationCode",verificationCode)
    await UserVerification.findOne({userId : _id})
@@ -505,44 +512,46 @@ bycrypt.compare(verificationCode,hashedverificationCode)
       .catch(err=>{console.log('err updateing the  , thr err ' +err)})
  }else{
     console.log("invalid unigue string")
-  }
+    res.send({message :"invalid code ",status:404})
+  } 
 })
   }
 }else{console.log("account don't exist")
 res.send({message:"account don't exist",staus:404})}
   })
   .catch((err)=>console.log(err)) 
-}
+})
+  
+app.post("/view-profile",async (req,res)=>{
+const user = await req.user
+const id = user._id
+ profile.findOne({userId:id})
+.then(result=>{
+res.send({data:result,status:200})
+})
+.catch(err=>{console.log("err finding the profile",err)
+  res.send({message:"something went wrong try again later, ",status:404})
+})
+})
+app.post("/edit-profile",upload.single('image'),async(req,res)=>{
+  let {name,address,phone, startTime, endTime, step,workdays,_id}=req.body 
+ 
+   await profile.findOneAndUpdate({_id:_id},{
+    phone: phone,
+    Name: name,
+    address: address,
+    workdays:workdays,
+    startTime:startTime,
+    endTime:endTime,
+    step:step
+    }).then(result=>{ if(req.file)
+     {authorize().then(result =>{ uploadfile(result,req.file,_id)})
+      .catch( error=>{  console.log('Error uploading file to Google Drive:', error);
+        res.send({message:'Internal Server Error',status:404})})}
+      console.log("profile has been edited ")
+      res.send({message:"profile edited successfully",status:200})})
+    .catch((err)=>{console.log("err in editing the patient :"+ err)
+    return res.send({message:"something went wrong try again later",status:404})
+})
 
-)
-  app.get('/logins',async(req,res)=>{
-   const user = await req.user
-   const id = user._id
-    await profile.exists({userId:id})
-   .then( profilecheck=>{if(profilecheck){
-    res.send({message:"verified",status:200,UserId:id,Profilecheck:true}
-    )}else{res.send({message:"verified",status:200,UserId:id,Profilecheck:false})}})
-  .catch(err=>{console.log(err)
-    res.send({message:"internal error  try again later",status:404})})
- })
-  app.get('/loginfailed',(req,res)=>{
-    res.send({message:req.session.messages[0],
-    status:404})
-    })
-
-app.get('/login',(req,res)=>{
-  let{password,email}=req.body
- user.findOne({Email:email})
- .then(((data)=>{
-  console.log(req.body)  
-  if(!data.verified){ 
- res.send({message:"user isn't verified",
-status: 404})
-  }else{res.redirect(`/verify?password=${password}&email=${email}`)}
- }))}
-)
-app.get("/verify",passport.authenticate('local',{
-  successRedirect:'/logins',
-  failureRedirect:'/loginfailed',
-  failureMessage:true
-}))
+  })

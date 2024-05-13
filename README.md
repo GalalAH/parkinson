@@ -157,3 +157,34 @@ res:{ "result": [
     message: string
     ,status:int
     }
+ post / view-profile
+            req:{
+                nothing
+                }   
+            res:{data:{
+                    _id:String this is the id of the profile document
+                    img:String,
+                    userId :String,
+                    phone: { type: String},
+                    Name: { type: String, required: true },
+                    address: { type: String },
+                    workdays:{type: Array of Strings },
+                    startTime:String, endTime:String, step:String
+                    },
+                    status:int
+
+                            }    
+
+post  /edit-profile
+req:{               _id:_id (the id of the profile document)
+                    if(there is new img) img: file
+                    phone: { type: String},
+                    Name: { type: String, required: true },
+                    address: { type: String },
+                    workdays:{type: Array of Strings },
+                    startTime:String, endTime:String, step:String
+                            }
+res:        {
+        message:String,
+        status:int
+            }

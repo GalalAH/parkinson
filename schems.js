@@ -111,7 +111,7 @@ const Doctors = mongoose.model("Doctorsinfo",doctors)
 const user = mongoose.model("user",User)
 const UserVerification = mongoose.model("UserVerification",UserVerificationschema )
 
-const profile = mongoose.model("profile",profileschema)
+const profile = mongoose.model("profiles",profileschema)
 module.exports ={blog,Doctors,user,UserVerification,patient,profile,Schedule}
 
-
+  
