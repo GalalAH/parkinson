@@ -269,13 +269,12 @@ app.post('/reset-password', async (req, res) => {
     }
 });
 //email verify api
-
-
 app.post('/emailverification',async(req,res)=>{
   let {email,code}=req.body
  await user.findOne({Email:email})
 
   .then(result=>{
+    console.log(result)
     const _id=result._id
     res.redirect(`/user/verify?_id=${_id}&verificationCode=${code}`)
     })
