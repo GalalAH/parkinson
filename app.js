@@ -436,12 +436,13 @@ patient.deleteMany({userId:id}).then(res.send("all deleted"))
 })
 app.post('/profile',upload.single('image'),async (req,res)=>{  
   const user = await req.user
+  const file = await req.file 
   if(user._id){
   console.log("session started")
   }else{console.log("login first")
    res.send("login first")}
    const id = user._id
-    if (!req.file) {
+    if (!file) {
       return res.status(404).send('No file uploaded.');
     }
     //console.log(req.file)
