@@ -519,7 +519,7 @@ bycrypt.compare(verificationCode,hashedverificationCode)
           })
       .catch(err=>{console.log('err updateing the  , thr err ' +err)})
  }else{
-    console.log("invalid unigue string"
+    console.log("invalid unigue string")
                res.send({message :"invalid code ",status:404})
   }
 })
