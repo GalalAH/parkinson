@@ -514,7 +514,7 @@ user.deleteOne({userId:_id}
     } )
 
   }else{
-bycrypt.compare(verificationCode,hashedverificationCode)
+bbycrypt.compare(verificationCode,hashedverificationCode)
 .then(result=>{
   if(result){
   
@@ -528,10 +528,9 @@ bycrypt.compare(verificationCode,hashedverificationCode)
       .catch(err=>{console.log('err updateing the  , thr err ' +err)})
  }else{
     console.log("invalid unigue string")
-
     res.send({message :"invalid code ",status:404})
   } 
-
+})
   }
 }else{console.log("account don't exist")
 res.send({message:"account don't exist",staus:404})}
