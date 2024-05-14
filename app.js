@@ -1,7 +1,10 @@
 
-require('dotenv').config()
 
 //const schedule = require('node-schedule');
+
+
+require('dotenv').config()
+
 const {generateWeeklySchedules,AutdSchedule}=require("./apoinmment")
 const multer = require('multer');
 const storage = multer.memoryStorage();
@@ -53,6 +56,18 @@ html:`<p>verify your eamil address to complete the singup and login into your ac
  ${Code} <b> expires in 6 hours</b>.</p>`
 
 }
+
+
+
+//const schedule = require('node-schedule');
+
+
+
+// Define a schedule to run at midnight (beginning of a new day)
+// const midnightTask = schedule.scheduleJob('0 0 * * *', () => {
+//   AutdSchedule()
+// });
+
 
 
 const newVerification = new UserVerification({
@@ -255,12 +270,12 @@ app.post('/reset-password', async (req, res) => {
     }
 });
 //email verify api
-
-
-app.post('/emailverification',(req,res)=>{
+app.post('/emailverification',async(req,res)=>{
   let {email,code}=req.body
-  user.findOne({Email:email})
+ await user.findOne({Email:email})
+
   .then(result=>{
+    console.log(result)
     const _id=result._id
     verifiy(_id,code,res)
     }).catch(err=>{conole.log(err)
@@ -422,14 +437,17 @@ patient.deleteMany({userId:id}).then(res.json("all deleted"))
 app.post('/profile',async (req,res)=>{  
   try{
   const user = await req.user
+  const file = await req.file 
   if(user._id){
   console.log("session started")
   }else{console.log("login first")
    res.json("login first")}
    const id = user._id
+
     // if (!req.file) {
     //   return res.status(404).json('No file uploaded.');
     // }
+
     //console.log(req.file)
     let {name,address,phone, startTime, endTime, step,workdays}=req.query
     const Profile = new profile({
@@ -514,6 +532,7 @@ app.post("/edit-profile",upload.single('image'),async(req,res)=>{
     .catch((err)=>{console.log("err in editing the patient :"+ err)
     return res.json({message:"something went wrong try again later",status:404})
 })
+
   })
   app.post("/doctors-list",async (req,res)=>{
     profile.find()
@@ -533,3 +552,4 @@ app.post("/edit-profile",upload.single('image'),async(req,res)=>{
           console.log("err loging out",err)
         }
     })
+

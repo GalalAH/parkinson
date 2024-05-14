@@ -1,4 +1,5 @@
 post /sinup
+=
     Req:{
       password : string
       email : String
@@ -9,62 +10,64 @@ post /sinup
         Statues: int
 }
 get /login
-
-Req: {email: sTring,
-passwoerd: sTring,
-UserId:id, the doctor id 
-Profilecheck:bolean if false proceed to profile makeing
-}
-
-Res:{
-If (successfully) =>UserId:string
-Message:string
-Statues:int
-}
+=
+		Req: {email: sTring,
+		passwoerd: sTring,
+		UserId:id, the doctor id 
+		Profilecheck:bolean if false proceed to profile makeing
+		}
+		
+		Res:{
+		If (successfully) =>UserId:string
+		Message:string
+		Statues:int
+		}
 
 get /emailverification
-req : {
-
- code: number,
-email":String
-}
-res:{
-message:string,
-status:number
-}
+=
+	req : {
+		
+		 code: number,
+		email":String
+		}
+		res:{
+			message:string,
+			status:number
+		}
 post /forget-password
+=
 
+	req:{
+	email:String
+	
 
-req:{
-email:String
-
-
-}
+	}
 
 res:{
      
     message: String
     status: number
 
-}
+     }
 post /Verify-code
-
-req{
-email:String,
-code:number
-}
-res:{
-     
-    message: String
-    status: number
-
-}
+=
+	req{
+	email:String,
+	code:number
+	}
+	res:{
+	     
+	    message: String
+	    status: number
+	
+	    }
 post /reset-password
-req{
-email:String
-newPassword:String
-
-}
+=
+	req{
+	email:String
+	newPassword:String
+	
+	}
 
 
 get PatientList
@@ -156,6 +159,7 @@ res:{ "result": [
     message: string
     ,status:int
     }
+
  post / view-profile
             req:{
                 nothing
@@ -187,3 +191,4 @@ res:        {
         message:String,
         status:int
             }
+
