@@ -13,7 +13,7 @@ const {authorize,uploadfile}=require('./imgUploader')
 const nodemailer = require('nodemailer')
 const flash =require('express-flash')
 const express = require('express')
-
+const morgan =require("morgan")
 const {profile,user,UserVerification,patient,Schedule} =require("./schems")
 
 const verify =require("./verification")
@@ -79,7 +79,7 @@ expiresAT:Date.now()+ 21600000
 newVerification.save()
 .then((result)=>{
   console.log(result)
-  transport.sendMail(mailOptions)
+  transport.jsonMail(mailOptions)
   .then(()=>{
 
 console.log("pending")
@@ -114,7 +114,7 @@ secret:process.env.SESSION_SECRET,
 resave: false,
 saveUninitialized:false
 }))
-
+app.use(morgan('tiny'))
 app.use(flash())
 app.use(passport.initialize())
 app.use(passport.session())
@@ -125,7 +125,7 @@ app.post('/signup',async (req,res)=>{
     const emailcheck =await user.exists({Email:email})
     
     if(emailcheck){
-      return res.send({message : "this email is already used",status:404})
+      return res.json({message : "this email is already used",status:404})
   }
    
  const hashedpass = await bycrypt.hash(password,10)
@@ -143,12 +143,12 @@ User.save()
   
 sendverificationemail(result,res)
 })
-res.send({message:"singup successfully",
+res.json({message:"singup successfully",
 status: 200
            })
   }catch(e){
     console.log(e)
-    res.send({message : "somthing went wrong please try again later",status:404})
+    res.json({message : "somthing went wrong please try again later",status:404})
   }
 })
 
@@ -157,14 +157,14 @@ app.get('/logins',async(req,res)=>{
   const user = await req.user
   const id = user._id
    await profile.exists({userId:id})
-  .then( profilecheck=>{if(profilecheck){
-   res.send({message:"verified",status:200,UserId:id,Profilecheck:true}
-   )}else{res.send({message:"verified",status:200,UserId:id,Profilecheck:false})}})
+  .then( async profilecheck=>{if(profilecheck){const Profile =await profile.findOne({_id:profilecheck})
+   res.json({message:"verified",status:200,data:Profile,Profilecheck:true}
+   )}else{res.json({message:"verified",status:200,UserId:id,Profilecheck:false})}})
  .catch(err=>{console.log(err)
-   res.send({message:"internal error  try again later",status:404})})
+   res.json({message:"internal error  try again later",status:404})})
 })
  app.get('/loginfailed',(req,res)=>{
-   res.send({message:req.session.messages[0],
+   res.json({message:req.session.messages[0],
    status:404})
    })
 
@@ -174,9 +174,9 @@ user.findOne({Email:email})
 .then(((data)=>{
  console.log(req.body)  
  if(!data.verified){ 
-res.send({message:"user isn't verified",
+res.json({message:"user isn't verified",
 status: 404})
- }else{res.redirect(`/verify?password=${password}&email=${email}`)}
+ }else{res.json({url:"/verify",status:200,password:password,email:email})}
 }))}
 )
 app.get("/verify",passport.authenticate('local',{
@@ -187,7 +187,7 @@ app.get("/verify",passport.authenticate('local',{
 
 app.get('/',(req,res)=>{
  
-  res.send("server on render started ")
+  res.json({message:"server on render started ",status:200})
 })
 app.post('/forget-password', async (req, res) => {
   console.log("sending code")
@@ -210,16 +210,16 @@ app.post('/forget-password', async (req, res) => {
             subject: 'Password Reset Verification Code',
             text: `Your verification code is: ${verificationCode}. This code is valid for 10 minutes.`
         };
-        transport.sendMail(mailOptions, (err) => {
+        transport.jsonMail(mailOptions, (err) => {
             if (err) {
                 console.log(err);
-                return res.send({ error: 'Error sending verification email.', status:404 });
+                return res.json({ error: 'Error sending verification email.', status:404 });
             }
-            res.send({ message: 'Verification code sent to your email.',status:200 });
+            res.json({ message: 'Verification code sent to your email.',status:200 });
         });
     } catch (err) {
         console.log(err);
-        res.send({ message: 'Server error. Please try again later.',status:404 });
+        res.json({ message: 'Server error. Please try again later.',status:404 });
     }
 });
 
@@ -239,10 +239,10 @@ app.post('/Verify-code', async (req, res) => {
         User.resetPasswordCode = null;
         // Reset password
         await User.save();
-        res.send({ message: 'code Verified.',status:200 });
+        res.json({ message: 'code Verified.',status:200 });
     } catch (err) {
         console.log(err);
-        res.send({ error: 'Server error. Please try again later.',status:404  });
+        res.json({ error: 'Server error. Please try again later.',status:404  });
   }
 });
 // Route to reset password
@@ -263,10 +263,10 @@ app.post('/reset-password', async (req, res) => {
         // Save the updated user document
         await User.save();
 
-        res.send({ message: "Password reset successfully.",status:200 });
+        res.json({ message: "Password reset successfully.",status:200 });
     } catch (error) {
         console.error(error);
-        res.send({ error: "Server error. Please try again later.",status:404  });
+        res.json({ error: "Server error. Please try again later.",status:404  });
     }
 });
 //email verify api
@@ -279,7 +279,7 @@ app.post('/emailverification',async(req,res)=>{
     const _id=result._id
     verifiy(_id,code,res)
     }).catch(err=>{conole.log(err)
-    res.send({message:"cannot find the user",status:404})    
+    res.json({message:"cannot find the user",status:404})    
     })
 
   })
@@ -287,11 +287,13 @@ app.post('/emailverification',async(req,res)=>{
 
 app.post("/PatientList",async(req,res)=>{
   const user = await req.user
+ try{
   const id = user._id
    patient.find({userId: id}).then((result)=>{
-    res.send({result,status:200})
- }).catch((err)=>{res.send({message:"something went wrong try again later in PatientList",status:404})
-console.log(err)})
+    res.json({result,status:200})
+ }).catch((err)=>{res.json({message:"something went wrong try again later in PatientList",status:404})
+console.log(err)})}catch(err){console.log(err)
+  res.json({message:"login first"})}
 })
 
 app.post("/addPateint",async(req,res)=>{
@@ -309,26 +311,27 @@ illness:false
 })
 Patient.save()
 .then((result)=>{console.log(result)
- res.send({message:"added successfully",status:200})
+ res.json({message:"added successfully",status:200})
 }
  )
   .catch((err)=>{console.log("err in adding the patient :"+ err)
-  res.send({message:"something went wrong try again later",status:404})})
+  res.json({message:"something went wrong try again later",status:404})})
 })
 
 //doctor dashborad
 
 app.post("/PatientList",async(req,res)=>{
+  try{
   const user = await req.user
   const id = user._id
    patient.find({userId: id}).then((result)=>{
-    res.send({result,status:200})
- }).catch((err)=>{res.send({message:"something went wrong try again later in PatientList",status:404})
+    res.json({result,status:200})
+ }).catch((err)=>{res.json({message:"something went wrong try again later in PatientList",status:404})
 console.log(err)})
-})
+}catch{res.json({message:"something went wrong try again later in PatientList",status:404})}})
 
 app.post("/addPateint",async(req,res)=>{
-  const user = await req.user
+ try{ const user = await req.user
   const id = user._id
 let {name,phone,gender,age,address}=req.body 
 const Patient = new patient({
@@ -342,32 +345,24 @@ illness:false
 })
 Patient.save()
 .then((result)=>{console.log(result)
- res.send({message:"added successfully",status:200})
+ res.json({message:"added successfully",status:200})
 }
  )
   .catch((err)=>{console.log("err in adding the patient :"+ err)
-  res.send({message:"something went wrong try again later",status:404})})
+  res.json({message:"something went wrong try again later",status:404})})}
+  catch{res.json({message:"something went wrong try again later in adding the patient",status:404})}
 })
 
 app.post("/deletePateint",async(req,res)=>{
+  try{
   const user = await req.user
   const id = user._id
  const patient_id = req.body.id
-patient.deleteOne({_id:patient_id}).then(res.send({message:"deleted successfully",status:200}))
+patient.deleteOne({_id:patient_id}).then(res.json({message:"deleted successfully",status:200}))
 .catch((err)=>{console.log("err in deleteing the patient :"+ err)
-res.send({message:"something went wrong try again later",status:404})
+res.json({message:"something went wrong try again later",status:404})
 })
-})
-
-
-app.post("/deletePateint",async(req,res)=>{
-  const user = await req.user
-  const id = user._id
- const patient_id = req.body .id
-patient.deleteOne({_id:patient_id}).then(res.send({message:"deleted successfully",status:200}))
-.catch((err)=>{console.log("err in deleteing the patient :"+ err)
-res.send({message:"something went wrong try again later",status:404})
-})
+}catch{res.json({message:"something went wrong deleting the patient try again later ",status:404})}
 })
 
 app.post("/editPateint",async(req,res)=>{
@@ -382,12 +377,13 @@ app.post("/editPateint",async(req,res)=>{
     age:age,
     address:address,
   
-    }).then((result)=>{res.send({message:"edited successfully",status:200})})
+    }).then((result)=>{res.json({message:"edited successfully",status:200})})
     .catch((err)=>{console.log("err in editing the patient :"+ err)
-       res.send({message:"something went wrong try again later",status:404})
+       res.json({message:"something went wrong try again later",status:404})
 
 })})
 app.post("/findPatient",async(req,res)=>{
+  try{
   const user = await req.user
   const id = user._id
 
@@ -422,31 +418,36 @@ app.post("/findPatient",async(req,res)=>{
   };
   patient.find(query
   ).then((result)=>{
-res.send({result,status:200})
+res.json({result,status:200})
 console.log(result)
 })
 .catch((err)=>{console.log(err)
- res.send({message:"something went wrong try again later",status:404})})
+ res.json({message:"something went wrong try again later",status:404})})
 
 
+}catch(err){console.log(err)
+  res.json({message:"something went wrong try again later",status:404})}
 })
 app.delete('/deleteall',async(req,res)=>{
   const user = await req.user
   const id = user._id
-patient.deleteMany({userId:id}).then(res.send("all deleted"))
+patient.deleteMany({userId:id}).then(res.json("all deleted"))
 
 })
-app.post('/profile',upload.single('image'),async (req,res)=>{  
+app.post('/profile',async (req,res)=>{  
+  try{
   const user = await req.user
   const file = await req.file 
   if(user._id){
   console.log("session started")
   }else{console.log("login first")
-   res.send("login first")}
+   res.json("login first")}
    const id = user._id
-    if (!file) {
-      return res.status(404).send('No file uploaded.');
-    }
+
+    // if (!req.file) {
+    //   return res.status(404).json('No file uploaded.');
+    // }
+
     //console.log(req.file)
     let {name,address,phone, startTime, endTime, step,workdays}=req.query
     const Profile = new profile({
@@ -460,12 +461,12 @@ app.post('/profile',upload.single('image'),async (req,res)=>{
     })
     Profile.save()
 .catch(err=>{console.log(err)
-  return res.send({message:"somthing went wrong",status:404})
+  return res.json({message:"somthing went wrong",status:404})
 })
-     authorize().then(result =>{ uploadfile(result,req.file,Profile._id)
-     })
+    //  authorize().then(result =>{ uploadfile(result,req.file,Profile._id)
+     // })
     .catch( error=>{  console.log('Error uploading file to Google Drive:', error);
-      return res.send({message:'Internal Server Error',status:404})})
+      return res.json({message:'Internal Server Error',status:404})})
 
     const now = new Date();
     const currentDayOfWeek = now.getDay();
@@ -475,81 +476,40 @@ const weeklySchedules = await generateWeeklySchedules(id,currentDayOfWeek, start
 Schedule.insertMany(weeklySchedules)
   .then(() => {
     console.log('Weekly schedules saved successfully');
-    res.send({message:"your profile id done",status:200})
+    res.json({message:"your profile id done",status:200})
   })
   .catch((err) => {
     console.error('Failed to save weekly schedules', err)
   });
   
-
+  }catch(err){console.log(err)
+    res.json({message:'Internal Server Error',status:404})
+  }
 })
 
 // app.post('/test',(req,res)=>{
   
 //   try{
   
-//   res.status(200).send("test successfully",AutdSchedule())
+//   res.status(200).json("test successfully",AutdSchedule())
 //   }catch{
-//     res.status(404).send("test went wrong")
+//     res.status(404).json("test went wrong")
 
 //   }
 // })
 
 
-app.get('/user/verify',async(req,res)=>{
-  let {_id,verificationCode}=req.query 
-  console.log("id",_id)
-  console.log("verificationCode",verificationCode)
-   await UserVerification.findOne({userId : _id})
-  .then((result)=>{
-    console.log("result",result)  
-if(result){
-  const{expiresAT} = result.expiresAT
-  const hashedverificationCode =result.verificationCode
-
-  if(expiresAT<Date.now()){
-    UserVerification.deleteOne({userId:_d})
-    .then(result =>{
-user.deleteOne({userId:_id}
-  .then(res.send({message:'link expired',status:200}))
-  .catch(err => console.log(err)))
-
-    } )
-
-  }else{
-bycrypt.compare(verificationCode,hashedverificationCode)
-.then(result=>{
-  if(result){
   
-    user.updateOne({_id:_id},{verified:true})
-      .then(()=>{
-        UserVerification.deleteOne({userId:_id})
-          .then(()=>{
-        res.send({message :"user verified ",status:200})})
-        .catch(err=>{console.log(err)})
-          })
-      .catch(err=>{console.log('err updateing the  , thr err ' +err)})
- }else{
-    console.log("invalid unigue string")
-    res.send({message :"invalid code ",status:404})
-  } 
-})
-  }
-}else{console.log("account don't exist")
-res.send({message:"account don't exist",staus:404})}
-  })
-  .catch((err)=>console.log(err)) 
-})
   
 app.post("/view-profile",async (req,res)=>{
 const user = await req.user
 const id = user._id
  profile.findOne({userId:id})
 .then(result=>{
-res.send({data:result,status:200})
+res.json({data:result,status:200})
 })
 .catch(err=>{console.log("err finding the profile",err)
-  res.send({message:"something went wrong try again later, ",status:404})
+  res.json({message:"something went wrong try again later, ",status:404})
 })
 })
 app.post("/edit-profile",upload.single('image'),async(req,res)=>{
@@ -566,13 +526,30 @@ app.post("/edit-profile",upload.single('image'),async(req,res)=>{
     }).then(result=>{ if(req.file)
      {authorize().then(result =>{ uploadfile(result,req.file,_id)})
       .catch( error=>{  console.log('Error uploading file to Google Drive:', error);
-        res.send({message:'Internal Server Error',status:404})})}
+        res.json({message:'Internal Server Error',status:404})})}
       console.log("profile has been edited ")
-      res.send({message:"profile edited successfully",status:200})})
+      res.json({message:"profile edited successfully",status:200})})
     .catch((err)=>{console.log("err in editing the patient :"+ err)
-    return res.send({message:"something went wrong try again later",status:404})
+    return res.json({message:"something went wrong try again later",status:404})
 })
 
-
   })
+  app.post("/doctors-list",async (req,res)=>{
+    profile.find()
+   .then(result=>{
+   res.json({data:result,status:200})
+   })
+   .catch(err=>{console.log("err finding the profile",err)
+     res.json({message:"something went wrong try again later, ",status:404})
+   })
+   })
+  app.post("/logout",(req,res)=>{
+    try{
+        req.logOut(()=>{return res.json({message:"loged out successfully",status:200})})
+        }
+        catch(err){
+          res.json({message:"internal error try again later",status:404})
+          console.log("err loging out",err)
+        }
+    })
 
