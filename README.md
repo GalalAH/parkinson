@@ -2,7 +2,6 @@ post /sinup
     Req:{
       password : string
       email : String
-      phone : number/int
       name:string		
 }
     Res:{

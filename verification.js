@@ -26,7 +26,7 @@ bycrypt.compare(verificationCode,hashedverificationCode)
   
     user.updateOne({_id:_id},{verified:true})
       .then(()=>{
-        UserVerification.deleteOne({userId:_id})
+        UserVerification.deleteMany({userId:_id})
           .then(()=>{
         res.send({message :"user verified ",status:200})})
         .catch(err=>{console.log(err)})
