@@ -151,37 +151,52 @@ status: 200
     res.json({message : "somthing went wrong please try again later",status:404})
   }
 })
-
-
-app.get('/logins',async(req,res)=>{
-  const user = await req.user
-  const id = user._id
-   await profile.exists({userId:id})
-  .then( async profilecheck=>{if(profilecheck){const Profile =await profile.findOne({_id:profilecheck})
-   res.json({message:"verified",status:200,data:Profile,Profilecheck:true}
-   )}else{res.json({message:"verified",status:200,Profilecheck:false})}})
- .catch(err=>{console.log(err)
-   res.json({message:"internal error  try again later",status:404})})
-})
- app.get('/loginfailed',(req,res)=>{
-   res.json({message:req.session.messages[0],
-   status:404})
-   })
-
-app.post('/login',(req,res,next)=>{
- let{password,email}=req.body
-user.findOne({Email:email})
-.then((data)=>{
- console.log(req.body)  
- if(!data.verified){ 
-res.json({message:"user isn't verified",
-status: 404})
- }else{next()}})
-},passport.authenticate('local',{
-  successRedirect:'/logins',
-  failureRedirect:'/loginfailed',
-  failureMessage:true
- }))
+app.post('/login', (req, res, next) => {
+    let { password, email } = req.body;
+    user.findOne({ Email: email })
+      .then((data) => {
+        if (!data) {
+          return res.status(404).json({ message: "wrong email", status: 404 });
+        }
+        if (!data.verified) {
+          return res.status(404).json({ message: "User isn't verified", status: 404 });
+        }
+        // Call passport.authenticate() to authenticate the user
+        passport.authenticate('local', (err, user, info) => {
+          if (err) {
+            return res.status(500).json({ message: 'Internal Server Error', status: 404 });
+          }
+          if (!user) {
+            // Authentication failed
+            return res.status(401).json({ message: 'Authentication failed : wrong password', status: 404 });
+          }
+          // Authentication successful, set req.user and continue
+          req.logIn(user, (err) => {
+            if (err) {
+              return  res.status(401).json({ message: 'Authentication failed', status: 404 });
+            }
+            const id = user._id;
+            profile.exists({ userId: id })
+              .then(async (profilecheck) => {
+                if (profilecheck) {
+                  const Profile = await profile.findOne({ _id: profilecheck });
+                  return res.status(200).json({ message: 'Authentication successful', status: 200, data: Profile, Profilecheck: true });
+                } else {
+                  return res.status(200).json({ message: 'Authentication successful', status: 200, Profilecheck: false });
+                }
+              })
+              .catch((err) => {
+                console.log(err);
+                return res.status(500).json({ message: 'Internal Server Error', status: 404 });
+              });
+          });
+        })(req, res, next); // Pass req, res, and next to passport.authenticate()
+      })
+      .catch((err) => {
+        console.log(err);
+        return res.status(500).json({ message: 'Internal Server Error', status: 500 });
+      });
+  });
 // app.get("/verify",passport.authenticate('local',{
 //  successRedirect:'/logins',
 //  failureRedirect:'/loginfailed',
