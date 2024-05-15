@@ -79,7 +79,7 @@ expiresAT:Date.now()+ 21600000
 newVerification.save()
 .then((result)=>{
   console.log(result)
-  transport.jsonMail(mailOptions)
+  transport.sendMail(mailOptions)
   .then(()=>{
 
 console.log("pending")
@@ -210,7 +210,7 @@ app.post('/forget-password', async (req, res) => {
             subject: 'Password Reset Verification Code',
             text: `Your verification code is: ${verificationCode}. This code is valid for 10 minutes.`
         };
-        transport.jsonMail(mailOptions, (err) => {
+        transport.sendMail(mailOptions, (err) => {
             if (err) {
                 console.log(err);
                 return res.json({ error: 'Error sending verification email.', status:404 });
