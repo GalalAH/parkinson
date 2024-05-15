@@ -168,22 +168,25 @@ app.get('/logins',async(req,res)=>{
    status:404})
    })
 
-app.post('/login',(req,res)=>{
- let{password,email}=req.body
+app.get('/login',(req,res,next)=>{
+ let{password,email}=req.query
 user.findOne({Email:email})
-.then(((data)=>{
+.then((data)=>{
  console.log(req.body)  
  if(!data.verified){ 
 res.json({message:"user isn't verified",
 status: 404})
- }else{res.json({url:"/verify",status:200,password:password,email:email})}
-}))}
-)
-app.get("/verify",passport.authenticate('local',{
- successRedirect:'/logins',
- failureRedirect:'/loginfailed',
- failureMessage:true
-}))
+ }else{next()}})
+},passport.authenticate('local',{
+  successRedirect:'/logins',
+  failureRedirect:'/loginfailed',
+  failureMessage:true
+ })
+// app.get("/verify",passport.authenticate('local',{
+//  successRedirect:'/logins',
+//  failureRedirect:'/loginfailed',
+//  failureMessage:true
+// }))
 
 app.get('/',(req,res)=>{
  
