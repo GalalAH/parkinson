@@ -1,7 +1,13 @@
 
+
 require('dotenv').config()
 const fileUpload = require('express-fileupload');
+
 //const schedule = require('node-schedule');
+
+
+require('dotenv').config()
+
 const {generateWeeklySchedules,AutdSchedule}=require("./apoinmment")
 const multer = require('multer');
 const storage = multer.memoryStorage();
@@ -55,6 +61,18 @@ html:`<p>verify your eamil address to complete the singup and login into your ac
 }
 
 
+
+//const schedule = require('node-schedule');
+
+
+
+// Define a schedule to run at midnight (beginning of a new day)
+// const midnightTask = schedule.scheduleJob('0 0 * * *', () => {
+//   AutdSchedule()
+// });
+
+
+
 const newVerification = new UserVerification({
 userId:_id,
 verificationCode:hashedverificationCode,
@@ -64,7 +82,7 @@ expiresAT:Date.now()+ 21600000
 newVerification.save()
 .then((result)=>{
   console.log(result)
-  transport.jsonMail(mailOptions)
+  transport.sendMail(mailOptions)
   .then(()=>{
 
 console.log("pending")
@@ -138,23 +156,8 @@ status: 200
   }
 })
 
+app.post('/login', (req, res, next) => {
 
-app.get('/logins',async(req,res)=>{
-  const user = await req.user
-  const id = user._id
-   await profile.exists({userId:id})
-  .then( async profilecheck=>{if(profilecheck){const Profile =await profile.findOne({_id:profilecheck})
-   res.json({message:"verified",status:200,data:Profile,Profilecheck:true}
-   )}else{res.json({message:"verified",status:200,Profilecheck:false})}})
- .catch(err=>{console.log(err)
-   res.json({message:"internal error  try again later",status:404})})
-})
- app.get('/loginfailed',(req,res)=>{
-   res.json({message:req.session.messages[0],
-   status:404})
-   })
-
-   app.post('/login', (req, res, next) => {
     let { password, email } = req.body;
     user.findOne({ Email: email })
       .then((data) => {
@@ -200,7 +203,7 @@ app.get('/logins',async(req,res)=>{
         return res.status(500).json({ message: 'Internal Server Error', status: 500 });
       });
   });
-  
+
 // app.get("/verify",passport.authenticate('local',{
 //  successRedirect:'/logins',
 //  failureRedirect:'/loginfailed',
@@ -232,7 +235,7 @@ app.post('/forget-password', async (req, res) => {
             subject: 'Password Reset Verification Code',
             text: `Your verification code is: ${verificationCode}. This code is valid for 10 minutes.`
         };
-        transport.jsonMail(mailOptions, (err) => {
+        transport.sendMail(mailOptions, (err) => {
             if (err) {
                 console.log(err);
                 return res.json({ error: 'Error sending verification email.', status:404 });
@@ -292,12 +295,12 @@ app.post('/reset-password', async (req, res) => {
     }
 });
 //email verify api
-
-
-app.post('/emailverification',(req,res)=>{
+app.post('/emailverification',async(req,res)=>{
   let {email,code}=req.body
-  user.findOne({Email:email})
+ await user.findOne({Email:email})
+
   .then(result=>{
+    console.log(result)
     const _id=result._id
     verifiy(_id,code,res)
     }).catch(err=>{conole.log(err)
@@ -466,11 +469,14 @@ app.post('/profile',async (req,res)=>{
   console.log(req.files)
   const File = req.files.image;
   const user = await req.user
+  const file = await req.file 
   if(user._id){
   console.log("session started")
   }else{console.log("login first")
    res.json("login first")}
    const id = user._id
+
+
 
     //console.log(req.file)
     let {name,address,phone, startTime, endTime, step,workdays}=req.query
@@ -556,6 +562,7 @@ app.post("/edit-profile",upload.single('image'),async(req,res)=>{
     .catch((err)=>{console.log("err in editing the patient :"+ err)
     return res.json({message:"something went wrong try again later",status:404})
 })
+
   })
   app.post("/doctors-list",async (req,res)=>{
     profile.find()
@@ -575,3 +582,4 @@ app.post("/edit-profile",upload.single('image'),async(req,res)=>{
           console.log("err loging out",err)
         }
     })
+
