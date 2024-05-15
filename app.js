@@ -159,7 +159,7 @@ app.get('/logins',async(req,res)=>{
    await profile.exists({userId:id})
   .then( async profilecheck=>{if(profilecheck){const Profile =await profile.findOne({_id:profilecheck})
    res.json({message:"verified",status:200,data:Profile,Profilecheck:true}
-   )}else{res.json({message:"verified",status:200,UserId:id,Profilecheck:false})}})
+   )}else{res.json({message:"verified",status:200,Profilecheck:false})}})
  .catch(err=>{console.log(err)
    res.json({message:"internal error  try again later",status:404})})
 })
@@ -168,8 +168,8 @@ app.get('/logins',async(req,res)=>{
    status:404})
    })
 
-app.get('/login',(req,res,next)=>{
- let{password,email}=req.query
+app.post('/login',(req,res,next)=>{
+ let{password,email}=req.body
 user.findOne({Email:email})
 .then((data)=>{
  console.log(req.body)  
