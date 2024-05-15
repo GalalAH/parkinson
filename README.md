@@ -10,18 +10,33 @@ post /sinup
         Statues: int
 }
 get /login
-=
-		Req: {email: sTring,
-		passwoerd: sTring,
-		UserId:id, the doctor id 
-		Profilecheck:bolean if false proceed to profile makeing
-		}
-		
-		Res:{
-		If (successfully) =>UserId:string
-		Message:string
-		Statues:int
-		}
+
+
+Req: {email: sTring,
+passwoerd: sTring,
+
+Res:{
+If (successfully and have profile) =>
+       message:string
+        Statues: int
+        if (profilecheck){
+            data:{
+            img:String,
+            userId :String,
+            phone: { type: String},
+            Name: { type: String, required: true },
+            address: { type: String },
+            workdays:{type:Array},
+            startTime:String, endTime:String, step:String}},
+        
+        Profilecheck:bolean if false proceed to profile makeing
+}
+
+
+
+
+
+
 
 get /emailverification
 =

@@ -1,5 +1,8 @@
 
 
+require('dotenv').config()
+const fileUpload = require('express-fileupload');
+
 //const schedule = require('node-schedule');
 
 
@@ -106,6 +109,7 @@ async email => {
     }
 
 )
+app.use(fileUpload());
 
   app.use(express.json());
   app.use(express.urlencoded({extended:false}))
@@ -151,7 +155,9 @@ status: 200
     res.json({message : "somthing went wrong please try again later",status:404})
   }
 })
+
 app.post('/login', (req, res, next) => {
+
     let { password, email } = req.body;
     user.findOne({ Email: email })
       .then((data) => {
@@ -197,6 +203,7 @@ app.post('/login', (req, res, next) => {
         return res.status(500).json({ message: 'Internal Server Error', status: 500 });
       });
   });
+
 // app.get("/verify",passport.authenticate('local',{
 //  successRedirect:'/logins',
 //  failureRedirect:'/loginfailed',
@@ -453,7 +460,14 @@ patient.deleteMany({userId:id}).then(res.json("all deleted"))
 
 })
 app.post('/profile',async (req,res)=>{  
+  
   try{
+    if (!req.files ) {
+      console.log(req.files)
+      return res.status(400).json({ message: 'No files were uploaded' });
+  }
+  console.log(req.files)
+  const File = req.files.image;
   const user = await req.user
   const file = await req.file 
   if(user._id){
@@ -462,9 +476,7 @@ app.post('/profile',async (req,res)=>{
    res.json("login first")}
    const id = user._id
 
-    // if (!req.file) {
-    //   return res.status(404).json('No file uploaded.');
-    // }
+
 
     //console.log(req.file)
     let {name,address,phone, startTime, endTime, step,workdays}=req.query
@@ -481,9 +493,9 @@ app.post('/profile',async (req,res)=>{
 .catch(err=>{console.log(err)
   return res.json({message:"somthing went wrong",status:404})
 })
-    //  authorize().then(result =>{ uploadfile(result,req.file,Profile._id)
-     // })
-    .catch( error=>{  console.log('Error uploading file to Google Drive:', error);
+     authorize().then(result =>{ uploadfile(result,File,Profile._id)
+     })
+    .catch( error=>{ console.log('Error uploading file to Google Drive:', error);
       return res.json({message:'Internal Server Error',status:404})})
 
     const now = new Date();

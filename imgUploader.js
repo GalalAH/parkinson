@@ -38,7 +38,7 @@ profile.findByIdAndUpdate(id,{img:link})
 .catch((err)=>{console.log(err)})
 
 
-}catch{
+}catch(err){console.log(err)
     console.log("img not uploaded")
 
   }
