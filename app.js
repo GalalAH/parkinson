@@ -469,7 +469,7 @@ app.post('/profile',async (req,res)=>{
   console.log(req.files)
   const File = req.files.image;
   const user = await req.user
-    cosnole.log(user)
+    console.log(user)
   const file = await req.file 
   if(user._id){
   console.log("session started")
@@ -480,7 +480,7 @@ app.post('/profile',async (req,res)=>{
 
 
     //console.log(req.file)
-    let {name,address,phone, startTime, endTime, step,workdays}=req.body
+    let {name,address,phone, startTime, endTime, step,workdays}=req.query
     const Profile = new profile({
       userId:id,
       Name:name, 
