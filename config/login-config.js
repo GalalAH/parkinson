@@ -32,16 +32,6 @@ passport.deserializeUser((_id,done)=> { return done(null,getUserById(_id))})
 
 
 
-
-
-
-
-    
- 
-
-
-
-
 module.exports = initilaize
  
 

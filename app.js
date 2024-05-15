@@ -1,6 +1,6 @@
 
 require('dotenv').config()
-
+const fileUpload = require('express-fileupload');
 //const schedule = require('node-schedule');
 const {generateWeeklySchedules,AutdSchedule}=require("./apoinmment")
 const multer = require('multer');
@@ -91,6 +91,7 @@ async email => {
     }
 
 )
+app.use(fileUpload());
 
   app.use(express.json());
   app.use(express.urlencoded({extended:false}))
@@ -144,7 +145,7 @@ app.get('/logins',async(req,res)=>{
    await profile.exists({userId:id})
   .then( async profilecheck=>{if(profilecheck){const Profile =await profile.findOne({_id:profilecheck})
    res.json({message:"verified",status:200,data:Profile,Profilecheck:true}
-   )}else{res.json({message:"verified",status:200,UserId:id,Profilecheck:false})}})
+   )}else{res.json({message:"verified",status:200,Profilecheck:false})}})
  .catch(err=>{console.log(err)
    res.json({message:"internal error  try again later",status:404})})
 })
@@ -153,22 +154,58 @@ app.get('/logins',async(req,res)=>{
    status:404})
    })
 
-app.post('/login',(req,res)=>{
- let{password,email}=req.body
-user.findOne({Email:email})
-.then(((data)=>{
- console.log(req.body)  
- if(!data.verified){ 
-res.json({message:"user isn't verified",
-status: 404})
- }else{res.json({url:"/verify",status:200,password:password,email:email})}
-}))}
-)
-app.get("/verify",passport.authenticate('local',{
- successRedirect:'/logins',
- failureRedirect:'/loginfailed',
- failureMessage:true
-}))
+   app.post('/login', (req, res, next) => {
+    let { password, email } = req.body;
+    user.findOne({ Email: email })
+      .then((data) => {
+        if (!data) {
+          return res.status(404).json({ message: "wrong email", status: 404 });
+        }
+        if (!data.verified) {
+          return res.status(404).json({ message: "User isn't verified", status: 404 });
+        }
+        // Call passport.authenticate() to authenticate the user
+        passport.authenticate('local', (err, user, info) => {
+          if (err) {
+            return res.status(500).json({ message: 'Internal Server Error', status: 404 });
+          }
+          if (!user) {
+            // Authentication failed
+            return res.status(401).json({ message: 'Authentication failed : wrong password', status: 404 });
+          }
+          // Authentication successful, set req.user and continue
+          req.logIn(user, (err) => {
+            if (err) {
+              return  res.status(401).json({ message: 'Authentication failed', status: 404 });
+            }
+            const id = user._id;
+            profile.exists({ userId: id })
+              .then(async (profilecheck) => {
+                if (profilecheck) {
+                  const Profile = await profile.findOne({ _id: profilecheck });
+                  return res.status(200).json({ message: 'Authentication successful', status: 200, data: Profile, Profilecheck: true });
+                } else {
+                  return res.status(200).json({ message: 'Authentication successful', status: 200, Profilecheck: false });
+                }
+              })
+              .catch((err) => {
+                console.log(err);
+                return res.status(500).json({ message: 'Internal Server Error', status: 404 });
+              });
+          });
+        })(req, res, next); // Pass req, res, and next to passport.authenticate()
+      })
+      .catch((err) => {
+        console.log(err);
+        return res.status(500).json({ message: 'Internal Server Error', status: 500 });
+      });
+  });
+  
+// app.get("/verify",passport.authenticate('local',{
+//  successRedirect:'/logins',
+//  failureRedirect:'/loginfailed',
+//  failureMessage:true
+// }))
 
 app.get('/',(req,res)=>{
  
@@ -420,16 +457,21 @@ patient.deleteMany({userId:id}).then(res.json("all deleted"))
 
 })
 app.post('/profile',async (req,res)=>{  
+  
   try{
+    if (!req.files ) {
+      console.log(req.files)
+      return res.status(400).json({ message: 'No files were uploaded' });
+  }
+  console.log(req.files)
+  const File = req.files.image;
   const user = await req.user
   if(user._id){
   console.log("session started")
   }else{console.log("login first")
    res.json("login first")}
    const id = user._id
-    // if (!req.file) {
-    //   return res.status(404).json('No file uploaded.');
-    // }
+
     //console.log(req.file)
     let {name,address,phone, startTime, endTime, step,workdays}=req.query
     const Profile = new profile({
@@ -445,9 +487,9 @@ app.post('/profile',async (req,res)=>{
 .catch(err=>{console.log(err)
   return res.json({message:"somthing went wrong",status:404})
 })
-    //  authorize().then(result =>{ uploadfile(result,req.file,Profile._id)
-     // })
-    .catch( error=>{  console.log('Error uploading file to Google Drive:', error);
+     authorize().then(result =>{ uploadfile(result,File,Profile._id)
+     })
+    .catch( error=>{ console.log('Error uploading file to Google Drive:', error);
       return res.json({message:'Internal Server Error',status:404})})
 
     const now = new Date();
