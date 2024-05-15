@@ -460,7 +460,7 @@ patient.deleteMany({userId:id}).then(res.json("all deleted"))
 
 })
 app.post('/profile',async (req,res)=>{  
-  
+
   try{
     if (!req.files ) {
       console.log(req.files)
@@ -469,6 +469,7 @@ app.post('/profile',async (req,res)=>{
   console.log(req.files)
   const File = req.files.image;
   const user = await req.user
+    cosnole.log(user)
   const file = await req.file 
   if(user._id){
   console.log("session started")
