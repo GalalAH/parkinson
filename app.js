@@ -480,7 +480,7 @@ app.post('/profile',async (req,res)=>{
 
 
     //console.log(req.file)
-    let {name,address,phone, startTime, endTime, step,workdays}=req.query
+    let {name,address,phone, startTime, endTime, step,workdays}=req.body
     const Profile = new profile({
       userId:id,
       Name:name, 
