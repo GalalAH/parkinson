@@ -181,7 +181,7 @@ status: 404})
   successRedirect:'/logins',
   failureRedirect:'/loginfailed',
   failureMessage:true
- })
+ }))
 // app.get("/verify",passport.authenticate('local',{
 //  successRedirect:'/logins',
 //  failureRedirect:'/loginfailed',
