@@ -20,7 +20,7 @@ async function uploadfile(authclient,img,id){
   try{
 const drive = google.drive({version:"v3",auth:authclient})
 const filemetadata = {
-   name:`${img.originalname}`,
+   name:`${img.name}`,
    parents:["1XXA8L-vQ8llrkkmGdDuFgCgcKrZ_pptM"]
   }
   const response = await drive.files.create({
