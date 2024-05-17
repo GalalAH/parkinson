@@ -33,6 +33,7 @@ requird : true}
 //  user shema
 
 
+
 const User = new mongoose.Schema({
     password: {
       type: String,
@@ -67,6 +68,7 @@ const User = new mongoose.Schema({
   const blogSchema = new mongoose.Schema({
     // Define fields for your blog schema as needed
   })
+
 
 //pateints schema
 
