@@ -32,15 +32,17 @@ const filemetadata = {
   })
   
 
-  console.log("response",response.data.webViewLink)
+console.log("response",response.data.webViewLink)
 const link = response.data.webViewLink
 profile.findByIdAndUpdate(id,{img:link})
+
 .catch((err)=>{console.log(err)})
 
-
+return link
 }catch(err){console.log(err)
     console.log("img not uploaded")
 
   }
+
 }
 module.exports ={authorize,uploadfile}
