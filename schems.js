@@ -74,10 +74,10 @@ const User = new mongoose.Schema({
 
 const Patientschema = new schema({
     userId: { type: String, required: true },
-    phone: { type: Number },
+    phone: { type: String },
     Name: { type: String, required: true },
     address: { type: String },
-    age: { type: Number, required: true },  // 
+    age: { type: String, required: true },  // 
     gender: { type: String, required: true },
     illness: { type: Boolean },
     score:{type: Number}
