@@ -1,7 +1,13 @@
 
+
 require('dotenv').config()
 const fileUpload = require('express-fileupload');
+
 //const schedule = require('node-schedule');
+
+
+require('dotenv').config()
+
 const {generateWeeklySchedules,AutdSchedule}=require("./apoinmment")
 const multer = require('multer');
 const storage = multer.memoryStorage();
@@ -54,6 +60,18 @@ html:`<p>verify your eamil address to complete the singup and login into your ac
 }
 
 
+
+//const schedule = require('node-schedule');
+
+
+
+// Define a schedule to run at midnight (beginning of a new day)
+// const midnightTask = schedule.scheduleJob('0 0 * * *', () => {
+//   AutdSchedule()
+// });
+
+
+
 const newVerification = new UserVerification({
 userId:_id,
 verificationCode:hashedverificationCode,
@@ -63,7 +81,7 @@ expiresAT:Date.now()+ 21600000
 newVerification.save()
 .then((result)=>{
   console.log(result)
-  transport.jsonMail(mailOptions)
+  transport.sendMail(mailOptions)
   .then(()=>{
 
 console.log("pending")
@@ -131,9 +149,14 @@ status: 200
     res.json({message : "somthing went wrong please try again later",status:404})
   }
 })
+
    
    app.post('/login', (req, res,next) => {
     try{
+
+
+
+
     let { password, email } = req.body;
     user.findOne({ Email: email })
       .then((data) => {
@@ -178,9 +201,11 @@ status: 200
         console.log(err);
         return res.status(500).json({ message: 'Internal Server Error', status: 500 });
       });
+
   }catch(err){console.log(err)
   res.send("err")}});
   
+
 // app.get("/verify",passport.authenticate('local',{
 //  successRedirect:'/logins',
 //  failureRedirect:'/loginfailed',
@@ -212,7 +237,7 @@ app.post('/forget-password', async (req, res) => {
             subject: 'Password Reset Verification Code',
             text: `Your verification code is: ${verificationCode}. This code is valid for 10 minutes.`
         };
-        transport.jsonMail(mailOptions, (err) => {
+        transport.sendMail(mailOptions, (err) => {
             if (err) {
                 console.log(err);
                 return res.json({ error: 'Error sending verification email.', status:404 });
@@ -272,12 +297,12 @@ app.post('/reset-password', async (req, res) => {
     }
 });
 //email verify api
-
-
-app.post('/emailverification',(req,res)=>{
+app.post('/emailverification',async(req,res)=>{
   let {email,code}=req.body
-  user.findOne({Email:email})
+ await user.findOne({Email:email})
+
   .then(result=>{
+    console.log(result)
     const _id=result._id
     verifiy(_id,code,res)
     }).catch(err=>{conole.log(err)
@@ -437,13 +462,14 @@ patient.deleteMany({userId:id}).then(res.json("all deleted"))
 
 })
 app.post('/profile',async (req,res)=>{  
-  
+
   try{
     if (!req.files ) {
       console.log(req.files)
       return res.status(400).json({ message: 'No files were uploaded' });
   }
   console.log(req.files)
+
   const File = req.files.image;
   
   if(req.query.userId){
@@ -451,11 +477,11 @@ app.post('/profile',async (req,res)=>{
   }else{console.log("login first")
    return res.json("login first")}
    const id =req.query.userId
-   
+
     //console.log(req.file)
-    let {name,address,phone, startTime, endTime, step,workdays}=req.query
+    let {name,address,phone, startTime, endTime, step,workdays,userId}=req.body
     const Profile = new profile({
-      userId:id,
+      userId:userId,
       Name:name, 
       address:address,
       phone:phone,
@@ -488,10 +514,12 @@ app.post('/profile',async (req,res)=>{
     .catch( error=>{ console.log('Error uploading file to Google Drive:', error);
       return res.json({message:'Internal Server Error',status:404})})
 
+
     }catch(err){console.log(err)
       res.json({message:'Internal Server Error',status:404})
     }
     
+
 })
 
 // app.post('/test',(req,res)=>{
@@ -539,6 +567,7 @@ app.post("/edit-profile",async(req,res)=>{
     .catch((err)=>{console.log("err in editing the patient :"+ err)
     return res.json({message:"something went wrong try again later",status:404})
 })
+
   })
   app.post("/doctors-list",async (req,res)=>{
     profile.find()
@@ -558,3 +587,4 @@ app.post("/edit-profile",async(req,res)=>{
           console.log("err loging out",err)
         }
     })
+
