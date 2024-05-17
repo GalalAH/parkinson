@@ -79,8 +79,8 @@ const Patientschema = new schema({
     address: { type: String },
     age: { type: String, required: true },  // 
     gender: { type: String, required: true },
-    illness: { type: Boolean },
-    score:{type: Number}
+   
+    score:{type: String}
 })
 
 const profileschema= new schema({
