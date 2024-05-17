@@ -326,6 +326,7 @@ console.log(err)})}catch(err){console.log(err)
 app.post("/addPateint",async(req,res)=>{
   
 let {name,phone,gender,age,address,userId}=req.body
+  console.log(name)
 const Patient = new patient({
 userId:userId,
 phone:phone,
