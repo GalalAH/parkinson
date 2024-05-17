@@ -197,7 +197,7 @@ app.post('/login', (req, res, next) => {
                 return res.status(500).json({ message: 'Internal Server Error', status: 404 });
               });
           });
-        })
+        })(req, res, next);
       })
       .catch((err) => {
         console.log(err);
