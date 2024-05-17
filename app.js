@@ -472,7 +472,7 @@ app.post('/profile',async (req,res)=>{
 
   const File = req.files.image;
   
-  if(req.query.userId){
+  if(req.body.userId){
   console.log("session started")
   }else{console.log("login first")
    return res.json("login first")}
