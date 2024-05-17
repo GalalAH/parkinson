@@ -156,6 +156,7 @@ status: 200
   }
 })
 
+
 app.post('/login', (req, res, next) => {
 
     let { password, email } = req.body;
@@ -186,9 +187,9 @@ app.post('/login', (req, res, next) => {
               .then(async (profilecheck) => {
                 if (profilecheck) {
                   const Profile = await profile.findOne({ _id: profilecheck });
-                  return res.status(200).json({ message: 'Authentication successful', status: 200, data: Profile, Profilecheck: true });
+                  return res.status(200).json({ message: 'Authentication successful', status: 200,userId:id, data: Profile, Profilecheck: true });
                 } else {
-                  return res.status(200).json({ message: 'Authentication successful', status: 200, Profilecheck: false });
+                  return res.status(200).json({ message: 'Authentication successful', status: 200, userId:id,Profilecheck: false });
                 }
               })
               .catch((err) => {
@@ -196,7 +197,7 @@ app.post('/login', (req, res, next) => {
                 return res.status(500).json({ message: 'Internal Server Error', status: 404 });
               });
           });
-        })(req, res, next); // Pass req, res, and next to passport.authenticate()
+        })
       })
       .catch((err) => {
         console.log(err);
@@ -311,9 +312,9 @@ app.post('/emailverification',async(req,res)=>{
 //doctor dashborad
 
 app.post("/PatientList",async(req,res)=>{
-  const user = await req.user
+  
  try{
-  const id = user._id
+  const id = req.body.userId
    patient.find({userId: id}).then((result)=>{
     res.json({result,status:200})
  }).catch((err)=>{res.json({message:"something went wrong try again later in PatientList",status:404})
@@ -322,8 +323,8 @@ console.log(err)})}catch(err){console.log(err)
 })
 
 app.post("/addPateint",async(req,res)=>{
-  const user = await req.user
-  const id = user._id
+  
+  const id = req.body.userId
 let {name,phone,gender,age,address}=req.body
 const Patient = new patient({
 userId:id,
@@ -347,8 +348,8 @@ Patient.save()
 
 app.post("/PatientList",async(req,res)=>{
   try{
-  const user = await req.user
-  const id = user._id
+  
+  const id = req.body.userId
    patient.find({userId: id}).then((result)=>{
     res.json({result,status:200})
  }).catch((err)=>{res.json({message:"something went wrong try again later in PatientList",status:404})
@@ -356,8 +357,8 @@ console.log(err)})
 }catch{res.json({message:"something went wrong try again later in PatientList",status:404})}})
 
 app.post("/addPateint",async(req,res)=>{
- try{ const user = await req.user
-  const id = user._id
+ try{ 
+  const id = req.body.userId
 let {name,phone,gender,age,address}=req.body 
 const Patient = new patient({
 userId:id,
@@ -380,8 +381,8 @@ Patient.save()
 
 app.post("/deletePateint",async(req,res)=>{
   try{
-  const user = await req.user
-  const id = user._id
+  
+  const id = req.body.userId
  const patient_id = req.body.id
 patient.deleteOne({_id:patient_id}).then(res.json({message:"deleted successfully",status:200}))
 .catch((err)=>{console.log("err in deleteing the patient :"+ err)
@@ -409,8 +410,8 @@ app.post("/editPateint",async(req,res)=>{
 })})
 app.post("/findPatient",async(req,res)=>{
   try{
-  const user = await req.user
-  const id = user._id
+
+  const id = req.body.userId
 
   const searchparam= req.body.param
 
@@ -454,8 +455,8 @@ console.log(result)
   res.json({message:"something went wrong try again later",status:404})}
 })
 app.delete('/deleteall',async(req,res)=>{
-  const user = await req.user
-  const id = user._id
+  
+  const id = req.body.userId
 patient.deleteMany({userId:id}).then(res.json("all deleted"))
 
 })
@@ -467,17 +468,12 @@ app.post('/profile',async (req,res)=>{
       return res.status(400).json({ message: 'No files were uploaded' });
   }
   console.log(req.files)
-  const File = req.files.image;
-  const user = await req.user
-    console.log(user)
-  const file = await req.file 
-  if(user._id){
+  const File = req.files.image; 
+  if(req.body.userId){
   console.log("session started")
   }else{console.log("login first")
    res.json("login first")}
    const id = user._id
-
-
 
     //console.log(req.file)
     let {name,address,phone, startTime, endTime, step,workdays}=req.body
@@ -533,8 +529,8 @@ Schedule.insertMany(weeklySchedules)
   
   
 app.post("/view-profile",async (req,res)=>{
-const user = await req.user
-const id = user._id
+
+const id = req.body.userId
  profile.findOne({userId:id})
 .then(result=>{
 res.json({data:result,status:200})
@@ -543,9 +539,9 @@ res.json({data:result,status:200})
   res.json({message:"something went wrong try again later, ",status:404})
 })
 })
-app.post("/edit-profile",upload.single('image'),async(req,res)=>{
+app.post("/edit-profile",async(req,res)=>{
   let {name,address,phone, startTime, endTime, step,workdays,_id}=req.body 
- 
+  
    await profile.findOneAndUpdate({_id:_id},{
     phone: phone,
     Name: name,
@@ -554,7 +550,7 @@ app.post("/edit-profile",upload.single('image'),async(req,res)=>{
     startTime:startTime,
     endTime:endTime,
     step:step
-    }).then(result=>{ if(req.file)
+    }).then(result=>{ if(req.files)
      {authorize().then(result =>{ uploadfile(result,req.file,_id)})
       .catch( error=>{  console.log('Error uploading file to Google Drive:', error);
         res.json({message:'Internal Server Error',status:404})})}
