@@ -12,8 +12,7 @@ const flash =require('express-flash')
 const express = require('express')
 const morgan =require("morgan")
 const {profile,user,UserVerification,patient,Schedule} =require("./schems")
-
-const verify =require("./verification")
+const patientRoute = require('./patient')
 const app = express()   
 const bycrypt =require("bcrypt")
 const mongoose = require("mongoose")
@@ -74,13 +73,8 @@ console.log("pending")
 })
   .catch(err=>console.log("err in transporter 2 : "+err))
 
-
-
 .catch( ()=>  console.log("somthing wrong happend"))
-
 }
-
-
 login(
 passport,
 async email => { 
@@ -138,8 +132,8 @@ status: 200
   }
 })
    
-   app.post('/login', (req, res, next) => {
-    
+   app.post('/login', (req, res,next) => {
+    try{
     let { password, email } = req.body;
     user.findOne({ Email: email })
       .then((data) => {
@@ -178,13 +172,14 @@ status: 200
                 return res.status(500).json({ message: 'Internal Server Error', status: 404 });
               });
           });
-        })
+        })(req, res, next);
       })
       .catch((err) => {
         console.log(err);
         return res.status(500).json({ message: 'Internal Server Error', status: 500 });
       });
-  });
+  }catch(err){console.log(err)
+  res.send("err")}});
   
 // app.get("/verify",passport.authenticate('local',{
 //  successRedirect:'/logins',
@@ -451,12 +446,12 @@ app.post('/profile',async (req,res)=>{
   console.log(req.files)
   const File = req.files.image;
   
-  if(req.body.userId){
+  if(req.query.userId){
   console.log("session started")
   }else{console.log("login first")
-   res.json("login first")}
-   const id = user._id
-
+   return res.json("login first")}
+   const id =req.query.userId
+   
     //console.log(req.file)
     let {name,address,phone, startTime, endTime, step,workdays}=req.query
     const Profile = new profile({
@@ -472,28 +467,31 @@ app.post('/profile',async (req,res)=>{
 .catch(err=>{console.log(err)
   return res.json({message:"somthing went wrong",status:404})
 })
-     authorize().then(result =>{ uploadfile(result,File,Profile._id)
+     authorize().then(async result =>{const link = await uploadfile(result,File,Profile._id)
+     console.log("img link",link)
+     const now = new Date();
+     const currentDayOfWeek = now.getDay();
+     const weeklySchedules = await generateWeeklySchedules(id,currentDayOfWeek, startTime, endTime, step,workdays );
+ // Save the generated weekly schedules to MongoDB
+ Schedule.insertMany(weeklySchedules)
+   .then(async () => {
+     console.log('Weekly schedules saved successfully');
+ 
+   })
+   .catch((err) => {
+     console.error('Failed to save weekly schedules', err)
+   });
+   res.json({message:"your profile is done",img:link,status:200})
+
+
      })
     .catch( error=>{ console.log('Error uploading file to Google Drive:', error);
       return res.json({message:'Internal Server Error',status:404})})
 
-    const now = new Date();
-    const currentDayOfWeek = now.getDay();
-const weeklySchedules = await generateWeeklySchedules(id,currentDayOfWeek, startTime, endTime, step,workdays );
-
-// Save the generated weekly schedules to MongoDB
-Schedule.insertMany(weeklySchedules)
-  .then(() => {
-    console.log('Weekly schedules saved successfully');
-    res.json({message:"your profile id done",status:200})
-  })
-  .catch((err) => {
-    console.error('Failed to save weekly schedules', err)
-  });
-  
-  }catch(err){console.log(err)
-    res.json({message:'Internal Server Error',status:404})
-  }
+    }catch(err){console.log(err)
+      res.json({message:'Internal Server Error',status:404})
+    }
+    
 })
 
 // app.post('/test',(req,res)=>{
@@ -534,8 +532,8 @@ app.post("/edit-profile",async(req,res)=>{
     step:step
     }).then(result=>{ if(req.files)
      {authorize().then(result =>{ uploadfile(result,req.file,_id)})
-      .catch( error=>{  console.log('Error uploading file to Google Drive:', error);
-        res.json({message:'Internal Server Error',status:404})})}
+      .catch( error=>{ console.log('Error uploading file to Google Drive:', error);
+       return res.json({message:'Internal Server Error',status:404})})}
       console.log("profile has been edited ")
       res.json({message:"profile edited successfully",status:200})})
     .catch((err)=>{console.log("err in editing the patient :"+ err)
