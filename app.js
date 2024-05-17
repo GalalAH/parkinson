@@ -473,12 +473,12 @@ app.post('/profile',async (req,res)=>{
   console.log("session started")
   }else{console.log("login first")
    res.json("login first")}
-   const id = user._id
+
 
     //console.log(req.file)
-    let {name,address,phone, startTime, endTime, step,workdays}=req.body
+    let {name,address,phone, startTime, endTime, step,workdays,userId}=req.body
     const Profile = new profile({
-      userId:id,
+      userId:userId,
       Name:name, 
       address:address,
       phone:phone,
