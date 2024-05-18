@@ -1,4 +1,4 @@
-
+const bodyParser= require('body-parser')
 require('dotenv').config()
 const fileUpload = require('express-fileupload');
 //const schedule = require('node-schedule');
@@ -88,7 +88,9 @@ async email => {
 app.use(fileUpload());
 
   app.use(express.json());
-  app.use(express.urlencoded({extended:false}))
+  app.use( bodyParser.urlencoded({
+    extended: true,
+  }))
   app.use(session({
 secret:process.env.SESSION_SECRET,
 resave: false,
@@ -343,7 +345,7 @@ Name:name,
 gender:gender,
 age:age,
 address:address,
-illness:false
+illness:""
 })
 Patient.save()
 .then((result)=>{console.log(result)
@@ -436,6 +438,11 @@ app.delete('/deleteall',async(req,res)=>{
 patient.deleteMany({userId:id}).then(res.json("all deleted"))
 
 })
+
+
+
+
+
 app.post('/profile',async (req,res)=>{  
   
   try{
@@ -468,6 +475,9 @@ app.post('/profile',async (req,res)=>{
   return res.json({message:"somthing went wrong",status:404})
 })
      authorize().then(async result =>{const link = await uploadfile(result,File,Profile._id)
+      if(!link){
+        return res.json({message:'error uploading to drive',status:404})
+      }
      console.log("img link",link)
      const now = new Date();
      const currentDayOfWeek = now.getDay();
@@ -557,4 +567,62 @@ app.post("/edit-profile",async(req,res)=>{
           res.json({message:"internal error try again later",status:404})
           console.log("err loging out",err)
         }
+    })
+
+    app.get('/testprofile',upload.single('image'),async (req,res)=>{  
+  
+      try{  
+        if (!req.file ) {
+          console.log(req.file)
+          return res.status(400).json({ message: 'No files were uploaded' });
+      }
+      console.log(req.files)
+      const File = await req.file;
+      
+      if(req.query.userId){
+      console.log("session started")
+      }else{console.log("login first")
+       return res.json("login first")}
+       const id =req.query.userId
+       
+        console.log(req.file)
+        let {name,address,phone, startTime, endTime, step,workdays}=req.query
+        const Profile = new profile({
+          userId:id,
+          Name:name, 
+          address:address,
+          phone:phone,
+          img:"",
+          workdays:workdays,
+          startTime: startTime, endTime:endTime, step:step
+        })
+        Profile.save()
+    .catch(err=>{console.log(err)
+      return res.json({message:"somthing went wrong",status:404})
+    })
+         authorize().then(async result =>{const link = await uploadfile(result,File,Profile._id)
+         console.log("img link",link)
+         const now = new Date();
+         const currentDayOfWeek = now.getDay();
+         const weeklySchedules = await generateWeeklySchedules(id,currentDayOfWeek, startTime, endTime, step,workdays );
+     // Save the generated weekly schedules to MongoDB
+     Schedule.insertMany(weeklySchedules)
+       .then(async () => {
+         console.log('Weekly schedules saved successfully');
+     
+       })
+       .catch((err) => {
+         console.error('Failed to save weekly schedules', err)
+       });
+       res.json({message:"your profile is done",img:link,status:200})
+    
+    
+         })
+        .catch( error=>{ console.log('Error uploading file to Google Drive:', error);
+          return res.json({message:'Internal Server Error',status:404})})
+    
+        }catch(err){console.log(err)
+          res.json({message:'Internal Server Error',status:404})
+        }
+        
     })
