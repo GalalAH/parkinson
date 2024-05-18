@@ -1,7 +1,14 @@
+
 const bodyParser= require('body-parser')
+
 require('dotenv').config()
 const fileUpload = require('express-fileupload');
+
 //const schedule = require('node-schedule');
+
+
+require('dotenv').config()
+
 const {generateWeeklySchedules,AutdSchedule}=require("./apoinmment")
 const multer = require('multer');
 const storage = multer.memoryStorage();
@@ -12,7 +19,7 @@ const flash =require('express-flash')
 const express = require('express')
 const morgan =require("morgan")
 const {profile,user,UserVerification,patient,Schedule} =require("./schems")
-const patientRoute = require('./patient')
+//const patientRoute = require('./patient')
 const app = express()   
 const bycrypt =require("bcrypt")
 const mongoose = require("mongoose")
@@ -54,6 +61,18 @@ html:`<p>verify your eamil address to complete the singup and login into your ac
 }
 
 
+
+//const schedule = require('node-schedule');
+
+
+
+// Define a schedule to run at midnight (beginning of a new day)
+// const midnightTask = schedule.scheduleJob('0 0 * * *', () => {
+//   AutdSchedule()
+// });
+
+
+
 const newVerification = new UserVerification({
 userId:_id,
 verificationCode:hashedverificationCode,
@@ -63,7 +82,7 @@ expiresAT:Date.now()+ 21600000
 newVerification.save()
 .then((result)=>{
   console.log(result)
-  transport.jsonMail(mailOptions)
+  transport.sendMail(mailOptions)
   .then(()=>{
 
 console.log("pending")
@@ -133,9 +152,14 @@ status: 200
     res.json({message : "somthing went wrong please try again later",status:404})
   }
 })
+
    
    app.post('/login', (req, res,next) => {
     try{
+
+
+
+
     let { password, email } = req.body;
     user.findOne({ Email: email })
       .then((data) => {
@@ -180,9 +204,11 @@ status: 200
         console.log(err);
         return res.status(500).json({ message: 'Internal Server Error', status: 500 });
       });
+
   }catch(err){console.log(err)
   res.send("err")}});
   
+
 // app.get("/verify",passport.authenticate('local',{
 //  successRedirect:'/logins',
 //  failureRedirect:'/loginfailed',
@@ -214,7 +240,7 @@ app.post('/forget-password', async (req, res) => {
             subject: 'Password Reset Verification Code',
             text: `Your verification code is: ${verificationCode}. This code is valid for 10 minutes.`
         };
-        transport.jsonMail(mailOptions, (err) => {
+        transport.sendMail(mailOptions, (err) => {
             if (err) {
                 console.log(err);
                 return res.json({ error: 'Error sending verification email.', status:404 });
@@ -274,12 +300,12 @@ app.post('/reset-password', async (req, res) => {
     }
 });
 //email verify api
-
-
-app.post('/emailverification',(req,res)=>{
+app.post('/emailverification',async(req,res)=>{
   let {email,code}=req.body
-  user.findOne({Email:email})
+ await user.findOne({Email:email})
+
   .then(result=>{
+    console.log(result)
     const _id=result._id
     verifiy(_id,code,res)
     }).catch(err=>{conole.log(err)
@@ -302,10 +328,10 @@ console.log(err)})}catch(err){console.log(err)
 
 app.post("/addPateint",async(req,res)=>{
   
-  const id = req.body.userId
-let {name,phone,gender,age,address}=req.body
+let {name,phone,gender,age,address,userId}=req.body
+  console.log(name)
 const Patient = new patient({
-userId:id,
+userId:userId,
 phone:phone,
 Name:name,
 gender:gender,
@@ -444,25 +470,26 @@ patient.deleteMany({userId:id}).then(res.json("all deleted"))
 
 
 app.post('/profile',async (req,res)=>{  
-  
+
   try{
     if (!req.files ) {
       console.log(req.files)
       return res.status(400).json({ message: 'No files were uploaded' });
   }
   console.log(req.files)
+
   const File = req.files.image;
   
-  if(req.query.userId){
+  if(req.body.userId){
   console.log("session started")
   }else{console.log("login first")
    return res.json("login first")}
    const id =req.query.userId
-   
+
     //console.log(req.file)
-    let {name,address,phone, startTime, endTime, step,workdays}=req.query
+    let {name,address,phone, startTime, endTime, step,workdays,userId}=req.body
     const Profile = new profile({
-      userId:id,
+      userId:userId,
       Name:name, 
       address:address,
       phone:phone,
@@ -498,10 +525,12 @@ app.post('/profile',async (req,res)=>{
     .catch( error=>{ console.log('Error uploading file to Google Drive:', error);
       return res.json({message:'Internal Server Error',status:404})})
 
+
     }catch(err){console.log(err)
       res.json({message:'Internal Server Error',status:404})
     }
     
+
 })
 
 // app.post('/test',(req,res)=>{
@@ -549,6 +578,7 @@ app.post("/edit-profile",async(req,res)=>{
     .catch((err)=>{console.log("err in editing the patient :"+ err)
     return res.json({message:"something went wrong try again later",status:404})
 })
+
   })
   app.post("/doctors-list",async (req,res)=>{
     profile.find()
@@ -569,60 +599,4 @@ app.post("/edit-profile",async(req,res)=>{
         }
     })
 
-    app.get('/testprofile',upload.single('image'),async (req,res)=>{  
-  
-      try{  
-        if (!req.file ) {
-          console.log(req.file)
-          return res.status(400).json({ message: 'No files were uploaded' });
-      }
-      console.log(req.files)
-      const File = await req.file;
-      
-      if(req.query.userId){
-      console.log("session started")
-      }else{console.log("login first")
-       return res.json("login first")}
-       const id =req.query.userId
-       
-        console.log(req.file)
-        let {name,address,phone, startTime, endTime, step,workdays}=req.query
-        const Profile = new profile({
-          userId:id,
-          Name:name, 
-          address:address,
-          phone:phone,
-          img:"",
-          workdays:workdays,
-          startTime: startTime, endTime:endTime, step:step
-        })
-        Profile.save()
-    .catch(err=>{console.log(err)
-      return res.json({message:"somthing went wrong",status:404})
-    })
-         authorize().then(async result =>{const link = await uploadfile(result,File,Profile._id)
-         console.log("img link",link)
-         const now = new Date();
-         const currentDayOfWeek = now.getDay();
-         const weeklySchedules = await generateWeeklySchedules(id,currentDayOfWeek, startTime, endTime, step,workdays );
-     // Save the generated weekly schedules to MongoDB
-     Schedule.insertMany(weeklySchedules)
-       .then(async () => {
-         console.log('Weekly schedules saved successfully');
-     
-       })
-       .catch((err) => {
-         console.error('Failed to save weekly schedules', err)
-       });
-       res.json({message:"your profile is done",img:link,status:200})
-    
-    
-         })
-        .catch( error=>{ console.log('Error uploading file to Google Drive:', error);
-          return res.json({message:'Internal Server Error',status:404})})
-    
-        }catch(err){console.log(err)
-          res.json({message:'Internal Server Error',status:404})
-        }
-        
-    })
+

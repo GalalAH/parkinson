@@ -33,6 +33,7 @@ requird : true}
 //  user shema
 
 
+
 const User = new mongoose.Schema({
     password: {
       type: String,
@@ -68,17 +69,20 @@ const User = new mongoose.Schema({
     // Define fields for your blog schema as needed
   })
 
+
 //pateints schema
 
 const Patientschema = new schema({
     userId: { type: String, required: true },
-    phone: { type: Number },
+    phone: { type: String },
     Name: { type: String, required: true },
     address: { type: String },
-    age: { type: Number, required: true },  // 
+    age: { type: String, required: true },  // 
     gender: { type: String, required: true },
+
     illness: { type: String },
     score:{type: Number}
+
 })
 
 const profileschema= new schema({
