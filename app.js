@@ -1,4 +1,5 @@
 
+const bodyParser= require('body-parser')
 
 require('dotenv').config()
 const fileUpload = require('express-fileupload');
@@ -106,7 +107,9 @@ async email => {
 app.use(fileUpload());
 
   app.use(express.json());
-  app.use(express.urlencoded({extended:false}))
+  app.use( bodyParser.urlencoded({
+    extended: true,
+  }))
   app.use(session({
 secret:process.env.SESSION_SECRET,
 resave: false,
@@ -368,7 +371,7 @@ Name:name,
 gender:gender,
 age:age,
 address:address,
-illness:false
+illness:""
 })
 Patient.save()
 .then((result)=>{console.log(result)
@@ -461,6 +464,11 @@ app.delete('/deleteall',async(req,res)=>{
 patient.deleteMany({userId:id}).then(res.json("all deleted"))
 
 })
+
+
+
+
+
 app.post('/profile',async (req,res)=>{  
 
   try{
@@ -494,6 +502,9 @@ app.post('/profile',async (req,res)=>{
   return res.json({message:"somthing went wrong",status:404})
 })
      authorize().then(async result =>{const link = await uploadfile(result,File,Profile._id)
+      if(!link){
+        return res.json({message:'error uploading to drive',status:404})
+      }
      console.log("img link",link)
      const now = new Date();
      const currentDayOfWeek = now.getDay();
@@ -587,4 +598,5 @@ app.post("/edit-profile",async(req,res)=>{
           console.log("err loging out",err)
         }
     })
+
 
