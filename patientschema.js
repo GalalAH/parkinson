@@ -1,8 +1,9 @@
 const mongoose = require("mongoose");
 const schema = mongoose.Schema;
+
 // user Verification 
 
-const UserVerificationschema = new schema({
+const patientVerificationschema = new schema({
 userId:{ type: String, required: true },
 verificationCode:String,
 createdAt:Date,
@@ -10,7 +11,16 @@ expiresAT:Date
 })
 ///////////
  // reseerved apoinmments
+ const reservedApoinmentschema= new mongoose.Schema({
+  doctorId :{type:String,required:true},
+  patientId:{type:String,required:true},
+  dayOfWeek:{type:String,required:true},
+  dayOfMonth:{type:String,required:true},
+  TimeOfDay:{type:String,required:true},
+  month:{type:String,required:true},
+  Year:{type:String,required:true}
 
+});
   
 
 
@@ -55,16 +65,6 @@ const User = new mongoose.Schema({
 
 //pateints schema
 
-const Patientschema = new schema({
-    userId: { type: String, required: true },
-    phone: { type: String },
-    Name: { type: String, required: true },
-    address: { type: String },
-    age: { type: String, required: true },  // 
-    gender: { type: String, required: true },
-    illness: { type: String },
-    score:{type: String}
-})
 
 const profileschema= new schema({
     img:String,
@@ -75,28 +75,11 @@ const profileschema= new schema({
     workdays:{type:Array},
     startTime:String, endTime:String, step:String
 })
-const weeklyScheduleSchema = new mongoose.Schema({
-    userId :String,
-    dayOfWeek: String,
-    dayOfMonth: String,
-    month:String,
-    Year:String,
-    timeSlots: [
-      {
-        time: String,
-        available: Boolean
-      }
-    ],
-    available: Boolean
-  });
-  
-const Schedule = mongoose.model('WeeklySchedule', weeklyScheduleSchema);
 
-const patient=mongoose.model("Pateints",Patientschema)
-
-const user = mongoose.model("user",User)
-const UserVerification = mongoose.model("UserVerification",UserVerificationschema )
-const profile = mongoose.model("profiles",profileschema)
-module.exports ={user,UserVerification,patient,profile,Schedule}
+const patientUser = mongoose.model("patientUser",User)
+const patientVerification = mongoose.model("patientVerification",patientVerificationschema )
+const reservation = mongoose.model("reserved",reservedApoinmentschema )
+const profile = mongoose.model("patientprofile",profileschema)
+module.exports ={patientUser,patientVerification,profile,reservation}
 
   
