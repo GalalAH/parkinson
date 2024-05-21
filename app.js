@@ -385,7 +385,7 @@ Patient.save()
 
 app.post("/deletePateint",async(req,res)=>{
   try{
-  
+  console.log(" id : ",req.body.id)
   const id = req.body.userId
  const patient_id = req.body.id
 patient.deleteOne({_id:patient_id}).then(res.json({message:"deleted successfully",status:200}))
