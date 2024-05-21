@@ -399,7 +399,7 @@ app.post("/editPateint",async(req,res)=>{
   let{name,phone,gender,age,address,id}=req.body 
 
 
-  patient.findOneAndUpdate({_id,id},{
+  patient.findOneAndUpdate({_id:id},{
     phone:phone,
     Name:name,
     gender:gender,
