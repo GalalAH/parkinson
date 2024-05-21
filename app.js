@@ -400,7 +400,6 @@ app.post("/editPateint",async(req,res)=>{
 
 
   patient.findOneAndUpdate({_id,id},{
-    userId:id,
     phone:phone,
     Name:name,
     gender:gender,
