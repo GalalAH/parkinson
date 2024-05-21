@@ -19,8 +19,12 @@ const flash =require('express-flash')
 const express = require('express')
 const morgan =require("morgan")
 const {profile,user,UserVerification,patient,Schedule} =require("./schems")
-//const patientRoute = require('./patient')
+
+const {reservation}=require("./patientschema")
+const patientRoute = require('./patient')
+
 const app = express()   
+
 const bycrypt =require("bcrypt")
 const mongoose = require("mongoose")
 const dbURI= process.env.DB_URI
@@ -31,7 +35,8 @@ mongoose.connect(dbURI)
 const login = require('./config/login-config')
 const passport = require('passport')
 const session = require('express-session');
-const verifiy = require('./verification');
+const {verifiy} = require('./verification');
+const router = require('./patient');
 const transport =nodemailer.createTransport({
   service:'gmail',
   auth:{
@@ -115,6 +120,7 @@ secret:process.env.SESSION_SECRET,
 resave: false,
 saveUninitialized:false
 }))
+app.use('/patient',patientRoute)
 app.use(morgan('tiny'))
 app.use(flash())
 app.use(passport.initialize())
@@ -385,8 +391,7 @@ Patient.save()
 
 app.post("/deletePateint",async(req,res)=>{
   try{
-  console.log(" id : ",req.body.id)
-  const id = req.body.userId
+
  const patient_id = req.body.id
 patient.deleteOne({_id:patient_id}).then(res.json({message:"deleted successfully",status:200}))
 .catch((err)=>{console.log("err in deleteing the patient :"+ err)
@@ -516,7 +521,7 @@ app.post('/profile',async (req,res)=>{
    .catch((err) => {
      console.error('Failed to save weekly schedules', err)
    });
-   res.json({message:"your profile is done",img:link,status:200})
+   res.json({message:"your profile is done",img:link,_id:Profile._id,status:200})
 
 
      })
@@ -543,23 +548,11 @@ app.post('/profile',async (req,res)=>{
 // })
 
 
-  
-  
-app.post("/view-profile",async (req,res)=>{
-
-const id = req.body.userId
- profile.findOne({userId:id})
-.then(result=>{
-res.json({data:result,status:200})
-})
-.catch(err=>{console.log("err finding the profile",err)
-  res.json({message:"something went wrong try again later, ",status:404})
-})
-})
 app.post("/edit-profile",async(req,res)=>{
-  let {name,address,phone, startTime, endTime, step,workdays,_id}=req.body 
+  let {name,address,phone, startTime, endTime, step,workdays,userId}=req.body 
   
-   await profile.findOneAndUpdate({_id:_id},{
+  const File = req.files.image;
+   await profile.findOneAndUpdate({userId:userId},{
     phone: phone,
     Name: name,
     address: address,
@@ -567,24 +560,42 @@ app.post("/edit-profile",async(req,res)=>{
     startTime:startTime,
     endTime:endTime,
     step:step
-    }).then(result=>{ if(req.files)
-     {authorize().then(result =>{ uploadfile(result,req.file,_id)})
-      .catch( error=>{ console.log('Error uploading file to Google Drive:', error);
-       return res.json({message:'Internal Server Error',status:404})})}
+    })
+    .then(result=>{Schedule.deleteMany({userId:userId}).then(async()=>{
+
+      const now = new Date();
+      const currentDayOfWeek = now.getDay();
+      const weeklySchedules = await generateWeeklySchedules(userId,currentDayOfWeek, startTime, endTime, step,workdays );
+  // Save the generated weekly schedules to MongoDB
+  Schedule.insertMany(weeklySchedules)
+    .then(async () => {
+      console.log('Weekly schedules saved successfully');
+  
+    })
+    .catch((err) => {
+      console.error('Failed to save weekly schedules', err)
+    });
+
+
+
+    }).catch(err=>{console.log(err)
+    return res.json({message:"internal err",status:404})})
       console.log("profile has been edited ")
       res.json({message:"profile edited successfully",status:200})})
     .catch((err)=>{console.log("err in editing the patient :"+ err)
     return res.json({message:"something went wrong try again later",status:404})
-})
 
-  })
+                    })
+              })
+
+
   app.post("/doctors-list",async (req,res)=>{
     profile.find()
    .then(result=>{
    res.json({data:result,status:200})
    })
    .catch(err=>{console.log("err finding the profile",err)
-     res.json({message:"something went wrong try again later, ",status:404})
+     res.json({message:"something went wrong try again later",status:404})
    })
    })
   app.post("/logout",(req,res)=>{
@@ -596,5 +607,30 @@ app.post("/edit-profile",async(req,res)=>{
           console.log("err loging out",err)
         }
     })
+
+
+    
+    app.post("/new-profileImage",(req,res)=>{
+    let {_id} = req.body
+      if(req.files){
+        authorize().then(async result =>{const link = await uploadfile(result,req.files.image,_id)
+        
+         return res.json({message:"img uploaded successfully",link:link,status:200})
+        })
+  
+        }
+      res.json({message:"img was not uploaded ",status:404})
+    })
+
+app.post("/apoinmments",(req,res)=>{
+  
+let {userId} =req.body
+console.log(userId)
+reservation.find({doctorId:userId}).then(result=>{if(result){res.json({result,status:200})}
+else{res.json({message:"wrong id",status:404})}
+})
+.catch(err=>{console.log("err viewing apoinment : ",err)
+  res.json({message:"internal error",status:404})})
+})
 
 

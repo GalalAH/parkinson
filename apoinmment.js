@@ -44,13 +44,14 @@ const generateWeeklySchedules = async (userId,startDayOfWeek, startTime, endTime
       const currentDate = new Date(startDate);
       currentDate.setDate(startDate.getDate() + i);
       const dayOfWeek = daysOfWeek[currentDate.getDay()];
-
+      const month = (currentDate.getMonth() + 1).toString();
+      const Year = currentDate.getFullYear().toString()
       // If the day is before the start day of the week, skip it
       if (dayOfWeek !== startDayOfWeek && i === 0) continue;
       if (workdays.includes(dayOfWeek) == false) continue;
-      const dayOfMonth = currentDate.getDate();
+      const dayOfMonth = currentDate.getDate().toString();
       const timeSlots = await generateTimeSlots(startTime, endTime, step);
-      const weeklySchedule = { userId,dayOfWeek, dayOfMonth, timeSlots, available:true};
+      const weeklySchedule = {userId,month,Year,dayOfWeek, dayOfMonth, timeSlots, available:true};
       weeklySchedules.push(weeklySchedule);
     }
 
@@ -77,7 +78,7 @@ for(let i = 0; i < result.length; i++){
 
       if (workdays.includes(dayOfWeek) == false){currentDate.setDate(startDate.getDate() + 15)
         const dayOfWeek = daysOfWeek[currentDate.getDay()];}
-      const dayOfMonth = currentDate.getDate();
+      const dayOfMonth = currentDate.getDate().toString();
       const timeSlots = await generateTimeSlots(startTime, endTime, step);
       const newappoinment = { userId,dayOfWeek, dayOfMonth, timeSlots, available:true};
       newappoinments.push(newappoinment);

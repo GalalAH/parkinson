@@ -86,16 +86,16 @@ post /reset-password
 
 
 get PatientList
-    req:nothing
+    req:userId
     res:"result": [
         {
             "_id":string ,
             "userId":string ,
-            "phone":int ,
+            "phone":STring ,
             "Name":string ,
             "age": int,
             "gender": string ,
-            "illness":bolean,
+            "illness":string but empty  untill the ai finishs,
             "__v": 0
         }
     ],
@@ -105,18 +105,14 @@ get PatientList
 
 
     /addPateint
-     req:   res:"result": [
+     req:   
         {
-            "_id":string ,
             "userId":string ,
             "phone":int ,
             "Name":string ,
             "age": int,
             "gender": string ,
-            "illness":bolean,
-            
-    ],
-    "status": 200
+
 }
 
     res:{message: string,status:int}
@@ -128,14 +124,13 @@ req:{_id:string}
 res:{message: string,status:int}
 
 post /editPateint
-req:{ "_id":string ,
+req:{ 
             "userId":string ,
-            "phone":int ,
+            "phone":string ,
             "Name":string ,
-            "age": int,
+            "age": String,
             "gender": string ,
-            "illness":bolean,
-    score:{type: int}}
+            }
 res:{message: string,status:int}
 
 get "/findPatient"
@@ -143,24 +138,23 @@ req: param
 
 res:{ "result": [
         {
-            "_id":string ,
             "userId":string ,
-            "phone":int ,
+            "phone":String ,
             "Name":string ,
-            "age": int,
+            "age": String,
             "gender": string ,
-            "illness":bolean,
-            score:int
+            score:string
     ],
     "status": 200
 }
-    or
+    or if error happend
     {message: string,status:int}
 
 
     post /profile
     req:{
-
+        
+        image: type: file(any img type)
         name:String,
         address:String,
         phone:String, 
@@ -173,29 +167,14 @@ res:{ "result": [
     res:{
     message: string
     ,status:int
+    _id:string
     }
 
- post / view-profile
-            req:{
-                nothing
-                }   
-            res:{data:{
-                    _id:String this is the id of the profile document
-                    img:String,
-                    userId :String,
-                    phone: { type: String},
-                    Name: { type: String, required: true },
-                    address: { type: String },
-                    workdays:{type: Array of Strings },
-                    startTime:String, endTime:String, step:String
-                    },
-                    status:int
 
-                            }    
 
 post  /edit-profile
 req:{               _id:_id (the id of the profile document)
-                    if(there is new img) img: file
+                    if(there is new img) img: file  not the link
                     phone: { type: String},
                     Name: { type: String, required: true },
                     address: { type: String },
