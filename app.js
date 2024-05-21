@@ -397,8 +397,7 @@ res.json({message:"something went wrong try again later",status:404})
 
 app.post("/editPateint",async(req,res)=>{
   let{name,phone,gender,age,address,id}=req.body 
-
-
+comsole.log(" id : ",id)
   patient.findOneAndUpdate({_id:id},{
     phone:phone,
     Name:name,
