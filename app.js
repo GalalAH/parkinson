@@ -1,7 +1,14 @@
+
 const bodyParser= require('body-parser')
+
 require('dotenv').config()
 const fileUpload = require('express-fileupload');
+
 //const schedule = require('node-schedule');
+
+
+require('dotenv').config()
+
 const {generateWeeklySchedules,AutdSchedule}=require("./apoinmment")
 const multer = require('multer');
 const storage = multer.memoryStorage();
@@ -12,8 +19,10 @@ const flash =require('express-flash')
 const express = require('express')
 const morgan =require("morgan")
 const {profile,user,UserVerification,patient,Schedule} =require("./schems")
+
 const {reservation}=require("./patientschema")
 const patientRoute = require('./patient')
+
 const app = express()   
 
 const bycrypt =require("bcrypt")
@@ -57,6 +66,18 @@ html:`<p>verify your eamil address to complete the singup and login into your ac
 }
 
 
+
+//const schedule = require('node-schedule');
+
+
+
+// Define a schedule to run at midnight (beginning of a new day)
+// const midnightTask = schedule.scheduleJob('0 0 * * *', () => {
+//   AutdSchedule()
+// });
+
+
+
 const newVerification = new UserVerification({
 userId:_id,
 verificationCode:hashedverificationCode,
@@ -66,7 +87,7 @@ expiresAT:Date.now()+ 21600000
 newVerification.save()
 .then((result)=>{
   console.log(result)
-  transport.jsonMail(mailOptions)
+  transport.sendMail(mailOptions)
   .then(()=>{
 
 console.log("pending")
@@ -137,9 +158,14 @@ status: 200
     res.json({message : "somthing went wrong please try again later",status:404})
   }
 })
+
    
    app.post('/login', (req, res,next) => {
     try{
+
+
+
+
     let { password, email } = req.body;
     user.findOne({ Email: email })
       .then((data) => {
@@ -184,9 +210,11 @@ status: 200
         console.log(err);
         return res.status(500).json({ message: 'Internal Server Error', status: 500 });
       });
+
   }catch(err){console.log(err)
   res.send("err")}});
   
+
 // app.get("/verify",passport.authenticate('local',{
 //  successRedirect:'/logins',
 //  failureRedirect:'/loginfailed',
@@ -218,7 +246,7 @@ app.post('/forget-password', async (req, res) => {
             subject: 'Password Reset Verification Code',
             text: `Your verification code is: ${verificationCode}. This code is valid for 10 minutes.`
         };
-        transport.jsonMail(mailOptions, (err) => {
+        transport.sendMail(mailOptions, (err) => {
             if (err) {
                 console.log(err);
                 return res.json({ error: 'Error sending verification email.', status:404 });
@@ -278,12 +306,12 @@ app.post('/reset-password', async (req, res) => {
     }
 });
 //email verify api
-
-
-app.post('/emailverification',(req,res)=>{
+app.post('/emailverification',async(req,res)=>{
   let {email,code}=req.body
-  user.findOne({Email:email})
+ await user.findOne({Email:email})
+
   .then(result=>{
+    console.log(result)
     const _id=result._id
     verifiy(_id,code,res)
     }).catch(err=>{conole.log(err)
@@ -306,10 +334,10 @@ console.log(err)})}catch(err){console.log(err)
 
 app.post("/addPateint",async(req,res)=>{
   
-  const id = req.body.userId
-let {name,phone,gender,age,address}=req.body
+let {name,phone,gender,age,address,userId}=req.body
+  console.log(name)
 const Patient = new patient({
-userId:id,
+userId:userId,
 phone:phone,
 Name:name,
 gender:gender,
@@ -363,7 +391,7 @@ Patient.save()
 
 app.post("/deletePateint",async(req,res)=>{
   try{
-  
+
  const patient_id = req.body.id
 patient.deleteOne({_id:patient_id}).then(res.json({message:"deleted successfully",status:200}))
 .catch((err)=>{console.log("err in deleteing the patient :"+ err)
@@ -374,10 +402,8 @@ res.json({message:"something went wrong try again later",status:404})
 
 app.post("/editPateint",async(req,res)=>{
   let{name,phone,gender,age,address,id}=req.body 
-
-
-  patient.findOneAndUpdate({_id,id},{
-    userId:id,
+console.log(" id : ",id)
+  patient.findOneAndUpdate({_id:id},{
     phone:phone,
     Name:name,
     gender:gender,
@@ -447,25 +473,26 @@ patient.deleteMany({userId:id}).then(res.json("all deleted"))
 
 
 app.post('/profile',async (req,res)=>{  
-  
+
   try{
     if (!req.files ) {
       console.log(req.files)
       return res.status(400).json({ message: 'No files were uploaded' });
   }
   console.log(req.files)
+
   const File = req.files.image;
   
-  if(req.query.userId){
+  if(req.body.userId){
   console.log("session started")
   }else{console.log("login first")
    return res.json("login first")}
    const id =req.query.userId
-   
+
     //console.log(req.file)
-    let {name,address,phone, startTime, endTime, step,workdays}=req.query
+    let {name,address,phone, startTime, endTime, step,workdays,userId}=req.body
     const Profile = new profile({
-      userId:id,
+      userId:userId,
       Name:name, 
       address:address,
       phone:phone,
@@ -501,10 +528,12 @@ app.post('/profile',async (req,res)=>{
     .catch( error=>{ console.log('Error uploading file to Google Drive:', error);
       return res.json({message:'Internal Server Error',status:404})})
 
+
     }catch(err){console.log(err)
       res.json({message:'Internal Server Error',status:404})
     }
     
+
 })
 
 // app.post('/test',(req,res)=>{
@@ -555,8 +584,10 @@ app.post("/edit-profile",async(req,res)=>{
       res.json({message:"profile edited successfully",status:200})})
     .catch((err)=>{console.log("err in editing the patient :"+ err)
     return res.json({message:"something went wrong try again later",status:404})
+
                     })
               })
+
 
   app.post("/doctors-list",async (req,res)=>{
     profile.find()
@@ -576,6 +607,7 @@ app.post("/edit-profile",async(req,res)=>{
           console.log("err loging out",err)
         }
     })
+
 
     
     app.post("/new-profileImage",(req,res)=>{
@@ -600,4 +632,5 @@ else{res.json({message:"wrong id",status:404})}
 .catch(err=>{console.log("err viewing apoinment : ",err)
   res.json({message:"internal error",status:404})})
 })
+
 
