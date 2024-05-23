@@ -75,7 +75,7 @@ const profileschema= new schema({
     img:String,
     userId :String,
     phone: { type: String},
-    Name: { type: String, required: true },
+    name: { type: String, required: true },
     address: { type: String },
     workdays:{type:Array},
     startTime:String, endTime:String, step:String
