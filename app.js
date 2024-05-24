@@ -619,7 +619,7 @@ app.post("/edit-profile",async(req,res)=>{
         })
   
         }
-      res.json({message:"img was not uploaded ",status:404})
+      res.json(return {message:"img was not uploaded ",status:404})
     })
 
 app.post("/apoinmments",(req,res)=>{
@@ -627,10 +627,10 @@ app.post("/apoinmments",(req,res)=>{
 let {userId} =req.body
 console.log(userId)
 reservation.find({doctorId:userId}).then(result=>{if(result){res.json({result,status:200})}
-else{res.json({message:"wrong id",status:404})}
+else{return res.json({message:"wrong id",status:404})}
 })
 .catch(err=>{console.log("err viewing apoinment : ",err)
-  res.json({message:"internal error",status:404})})
+ return res.json({message:"internal error",status:404})})
 })
 
 
