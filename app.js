@@ -618,8 +618,8 @@ app.post("/edit-profile",async(req,res)=>{
          return res.json({message:"img uploaded successfully",link:link,status:200})
         })
   
-        }
-     return res.json( {message:"img was not uploaded ",status:404})
+        }else{
+     return res.json( {message:"img was not uploaded ",status:404})}
     })
 
 app.post("/apoinmments",(req,res)=>{
