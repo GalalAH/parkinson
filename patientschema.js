@@ -18,8 +18,9 @@ expiresAT:Date
   dayOfMonth:{type:String,required:true},
   TimeOfDay:{type:String,required:true},
   month:{type:String,required:true},
-  Year:{type:String,required:true}
-
+  Year:{type:String,required:true},
+  name:{type:String,required:true},
+  img:String
 });
   
 

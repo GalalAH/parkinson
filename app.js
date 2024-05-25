@@ -12,7 +12,7 @@ const flash =require('express-flash')
 const express = require('express')
 const morgan =require("morgan")
 const {profile,user,UserVerification,patient,Schedule} =require("./schems")
-const {reservation}=require("./patientschema")
+const {reservation,patientUser}=require("./patientschema")
 const patientRoute = require('./patient')
 const app = express()   
 
@@ -553,8 +553,9 @@ app.post("/apoinmments",(req,res)=>{
   
 let {userId} =req.body
 console.log(userId)
-reservation.find({patientId:userId}).then(result=>{if(result){res.json({result,status:200})}
-else{res.json({message:"wrong id",status:404})}
+reservation.find({doctorId:userId}).then(async reserve=>{
+    if(reserve){res.json({reserve,status:200})}
+    else{res.json({message:"wrong id",status:404})}
 })
 .catch(err=>{console.log("err viewing apoinment : ",err)
   res.json({message:"internal error",status:404})})
@@ -567,4 +568,46 @@ patient.updateOne({userId:userId},{score:score}).
 then(result=>{res.json({message:"score updated successfully",status:200})})
 .catch(err=>{console.log(err)
   res.json({message:"score update failed",status:404})})
+})
+
+
+app.post("/find-apoinmment",async(req,res)=>{
+  try{
+
+  const id = req.body.userId
+
+  const searchparam= req.body.param
+  const regex = new RegExp(`^${searchparam}`, 'i')
+  const query = {
+    doctorId:id,
+    $or: [
+      {
+        dayOfWeek: { $regex: regex },
+      },
+      { dayOfMonth: { $regex: regex } },
+      { TimeOfDay: { $regex: regex } },
+      {
+        Year: { $regex: regex }
+      },
+      { month: { $regex: regex } },
+      { name: { $regex: regex } }
+    ],
+  };
+  reservation.find(query
+  ).then((result)=>{
+res.json({result,status:200})
+console.log(result)
+})
+.catch((err)=>{console.log(err)
+ res.json({message:"something went wrong try again later",status:404})})
+
+
+}catch(err){console.log(err)
+  res.json({message:"something went wrong try again later",status:404})}
+})
+app.delete('/deleteall',async(req,res)=>{
+  
+  const id = req.body.userId
+patient.deleteMany({userId:id}).then(res.json("all deleted"))
+
 })
