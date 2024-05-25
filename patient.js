@@ -261,7 +261,7 @@ router.post('/emailverification',(req,res)=>{
   })
   router.post('/reserve',(req,res)=>{
 
-    let {name,doctorId,dayOfWeek,patientId,TimeOfDay,dayOfMonth,month,Year}=req.body
+    let {name,doctorId,dayOfWeek,patientId,TimeOfDay,dayOfMonth,month,Year,link}=req.body
     
     console.log(doctorId)
     const Reservation= new reservation({
@@ -272,7 +272,8 @@ router.post('/emailverification',(req,res)=>{
     dayOfMonth:dayOfMonth,
     TimeOfDay:TimeOfDay,
     month:month,
-    Year:Year
+    Year:Year,
+    img:link
     })
     Reservation.save().then(result=>{
       console.log(dayOfMonth)
@@ -306,11 +307,12 @@ router.post('/emailverification',(req,res)=>{
        res.json({message:"something went wrong try again later",status:404})
      })
      })
-      router.post("/apoinmments",(req,res)=>{
-  
+      router.post("/apoinmments",async(req,res)=>{
       let {userId} =req.body
       console.log(userId)
-      reservation.find({doctorId:userId}).then(result=>{if(result){res.json({result,status:200})}
+      reservation.find({patientId:userId}).then( async result=>{
+        
+        if(result){res.json({result,status:200})}
       else{res.json({message:"wrong id",status:404})}
       })
       .catch(err=>{console.log("err viewing apoinment : ",err)
@@ -328,9 +330,41 @@ router.post('/emailverification',(req,res)=>{
         .catch(err=>{console.log("err viewing apoinment : ",err)
           res.json({message:"internal error",status:404})})
         })
-
-
-
+        router.post("/find-apoinmment",async(req,res)=>{
+          try{
+        
+          const id = req.body.userId
+        
+          const searchparam= req.body.param
+          const regex = new RegExp(`^${searchparam}`, 'i')
+          const query = {
+            patientId:id,
+            $or: [
+              {
+                dayOfWeek: { $regex: regex },
+              },
+              { dayOfMonth: { $regex: regex } },
+              { TimeOfDay: { $regex: regex } },
+              {
+                Year: { $regex: regex }
+              },
+              { month: { $regex: regex } },
+              { name: { $regex: regex } }
+            ],
+          };
+          reservation.find(query
+          ).then((result)=>{
+        res.json({result,status:200})
+        console.log(result)
+        })
+        .catch((err)=>{console.log(err)
+         res.json({message:"something went wrong try again later",status:404})})
+        
+        
+        }catch(err){console.log(err)
+          res.json({message:"something went wrong try again later",status:404})}
+        })
+      
 
 
   module.exports = router
