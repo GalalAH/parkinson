@@ -171,45 +171,45 @@ status: 200
     user.findOne({ Email: email })
       .then((data) => {
         if (!data) {
-          return res.status(404).json({ message: "wrong email", status: 404 });
+          return res.status(404).json({ message: "wrong email",Profilecheck: false, status: 404 });
         }
         if (!data.verified) {
-          return res.status(404).json({ message: "User isn't verified", status: 404 });
+          return res.status(404).json({ message: "User isn't verified",Profilecheck: false, status: 404 });
         }
         // Call passport.authenticate() to authenticate the user
         passport.authenticate('local', (err, user, info) => {
           if (err) {
-            return res.status(500).json({ message: 'Internal Server Error', status: 404 });
+            return res.status(500).json({ message: 'Internal Server Error',Profilecheck: false, status: 404 });
           }
           if (!user) {
             // Authentication failed
-            return res.status(401).json({ message: 'Authentication failed : wrong password', status: 404 });
+            return res.status(401).json({ message: 'Authentication failed : wrong password',Profilecheck: false, status: 404 });
           }
           // Authentication successful, set req.user and continue
           req.logIn(user, (err) => {
             if (err) {
-              return  res.status(401).json({ message: 'Authentication failed', status: 404 });
+              return  res.status(401).json({ message: 'Authentication failed',Profilecheck: false, status: 404 });
             }
             const id = user._id;
             profile.exists({ userId: id })
               .then(async (profilecheck) => {
                 if (profilecheck) {
                   const Profile = await profile.findOne({ _id: profilecheck });
-                  return res.status(200).json({ message: 'Authentication successful', status: 200,userId:id, data: Profile, Profilecheck: true });
+                  return res.status(200).json({ message: 'Authentication successful',Profilecheck: false, status: 200,userId:id, data: Profile, Profilecheck: true });
                 } else {
-                  return res.status(200).json({ message: 'Authentication successful', status: 200, userId:id,Profilecheck: false });
+                  return res.status(200).json({ message: 'Authentication successful',Profilecheck: false, status: 200, userId:id,Profilecheck: false });
                 }
               })
               .catch((err) => {
                 console.log(err);
-                return res.status(500).json({ message: 'Internal Server Error', status: 404 });
+                return res.status(500).json({ message: 'Internal Server Error',Profilecheck: false, status: 404 });
               });
           });
         })(req, res, next);
       })
       .catch((err) => {
         console.log(err);
-        return res.status(500).json({ message: 'Internal Server Error', status: 500 });
+        return res.status(500).json({ message: 'Internal Server Error',Profilecheck: false, status: 500 });
       });
 
   }catch(err){console.log(err)
@@ -344,7 +344,7 @@ Name:name,
 gender:gender,
 age:age,
 address:address,
-score:"not measured"
+score:"0"
 })
 Patient.save()
 .then((result)=>{console.log(result)
