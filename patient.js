@@ -3,14 +3,14 @@ const router = express.Router()
 const {patientverifiy} = require('./verification');
 require('dotenv').config()
 //const schedule = require('node-schedule');
-
-const {authorize,uploadfile}=require('./imgUploader')
+const {authorize,patientuploadfile}=require('./imgUploader')
 const nodemailer = require('nodemailer')
-const {profile,patientUser,patientVerification,reservation} =require("./patientschema")
+const {patientUser,patientVerification,reservation} =require("./patientschema")
 const bycrypt =require("bcrypt")
-const{Schedule}=require("./schems")
+const{Schedule,profile, user}=require("./schems")
 const login = require('./config/login-config')
-const passport = require('passport')
+const passport = require('passport');
+const { appendFile } = require('fs');
 
 const transport =nodemailer.createTransport({
   service:'gmail',
@@ -48,66 +48,76 @@ expiresAT:Date.now()+ 21600000
 newVerification.save()
 .then((result)=>{
   console.log(result)
-  transport.jsonMail(mailOptions)
+  transport.sendMail(mailOptions)
   .then(()=>{
 
 console.log("pending")
 
   })
-  .catch(err=>console.log("err in transporter : "+err))
+  .catch(err=>{console.log("err in transporter : "+err)
+  return res.json({message:"internal error",status:404})
 })
-  .catch(err=>console.log("err in transporter 2 : "+err))
+})
+  .catch(err=>{console.log("err in transporter 2 : "+err)
+  return res.json({message:"internal error",status:404})})
 
-.catch( ()=>  console.log("somthing wrong happend"))
+.catch( ()=> { console.log("somthing wrong happend")
+return res.json({message:"internal error",status:404})})
 }
 login(
 passport,
 async email => { 
-  return  await user.findOne({Email:email})
+  return  await patientUser.findOne({Email:email})
   },
   async id => { 
-    return  await user.findOne({_id:id})
+    return  await patientUser.findOne({_id:id})
     }
 
 )
 
 router.post('/signup',async (req,res)=>{
-  let {password,email,name} = req.body  
+  
+  let {password,email,name,phone,gender} = req.query  
   try{
-    const emailcheck =await user.exists({Email:email})
+    if(!req.files){return res.json({message:"no image was uploaded",status:404})}
+    const emailcheck =await patientUser.exists({Email:email})
     
     if(emailcheck){
       return res.json({message : "this email is already used",status:404})
   }
    
  const hashedpass = await bycrypt.hash(password,10)
- const User = new user({   
+ const User = new patientUser({  
+  gender:gender,
+  phone:phone,
   username:name,
   password:hashedpass,
   Email:email ,
-  verified:false
-
-}) 
+  verified:false,
+  img:""
+})
 
 
 User.save()
 .then((result)=>{
-  
-sendverificationemail(result,res)
+  sendverificationemail(result,res)
+  authorize().then(async result =>{const link = await patientuploadfile(result,req.files.image,User._id)
+   User.img=link
+   User.save() 
+  return res.json({message:"img uploaded successfully",link:link,status:200})
+  })
+
 })
-res.json({message:"singup successfully",
-status: 200
-           })
   }catch(e){
     console.log(e)
-    res.json({message : "somthing went wrong please try again later",status:404})
+    return res.json({message : "somthing went wrong please try again later",status:404})
   }
 })
    
    router.post('/login', (req, res,next) => {
     try{
     let { password, email } = req.body;
-    user.findOne({ Email: email })
+    patientUser.findOne({ Email: email })
       .then((data) => {
         if (!data) {
           return res.status(404).json({ message: "wrong email", status: 404 });
@@ -129,21 +139,13 @@ status: 200
             if (err) {
               return  res.status(401).json({ message: 'Authentication failed', status: 404 });
             }
-            const id = user._id;
-            profile.exists({ userId: id })
-              .then(async (profilecheck) => {
-                if (profilecheck) {
-                  const Profile = await profile.findOne({ _id: profilecheck });
-                  return res.status(200).json({ message: 'Authentication successful', status: 200,userId:id, data: Profile, Profilecheck: true });
-                } else {
-                  return res.status(200).json({ message: 'Authentication successful', status: 200, userId:id,Profilecheck: false });
-                }
+            const id = user._id
+          
+            return res.status(200).json({ message: 'Authentication successful', status: 200,userId:id, data:data});
+                
+          
               })
-              .catch((err) => {
-                console.log(err);
-                return res.status(500).json({ message: 'Internal Server Error', status: 404 });
-              });
-          });
+              
         })(req, res, next);
       })
       .catch((err) => {
@@ -167,7 +169,7 @@ router.post('/forget-password', async (req, res) => {
   console.log("sending code")
   let { email } = req.body;
     try {
-        const User = await user.findOne({ Email: email });
+        const User = await patientUser.findOne({ Email: email });
         if (!User) {
             return res.status(400).json({ error: "User with this email does not exist. " });
         }
@@ -184,7 +186,7 @@ router.post('/forget-password', async (req, res) => {
             subject: 'Password Reset Verification Code',
             text: `Your verification code is: ${verificationCode}. This code is valid for 10 minutes.`
         };
-        transport.jsonMail(mailOptions, (err) => {
+        transport.sendMail(mailOptions, (err) => {
             if (err) {
                 console.log(err);
                 return res.json({ error: 'Error sending verification email.', status:404 });
@@ -201,7 +203,7 @@ router.post('/forget-password', async (req, res) => {
 router.post('/Verify-code', async (req, res) => {
     let { email, code } = req.body;
     try {
-        const User = await user.findOne({ Email: email });
+        const User = await patientUser.findOne({ Email: email });
         if (!User) {
             return res.json({ message: "User with this email does not exist. ",status:404 });
         }
@@ -225,7 +227,7 @@ router.post('/reset-password', async (req, res) => {
     
     try {
         // Find the user by email
-        const User = await user.findOne({ Email:email });
+        const User = await patientUser.findOne({ Email:email });
         if (!User) {
             return res.json({ error: "User with this email does not exist." ,status:404 });
         }
@@ -248,7 +250,7 @@ router.post('/reset-password', async (req, res) => {
 
 router.post('/emailverification',(req,res)=>{
   let {email,code}=req.body
-  user.findOne({Email:email})
+  patientUser.findOne({Email:email})
   .then(result=>{
     const _id=result._id
     patientverifiy(_id,code,res)
@@ -259,10 +261,11 @@ router.post('/emailverification',(req,res)=>{
   })
   router.post('/reserve',(req,res)=>{
 
-    let {doctorId,dayOfWeek,patientId,TimeOfDay,dayOfMonth,month,Year}=req.body
+    let {name,doctorId,dayOfWeek,patientId,TimeOfDay,dayOfMonth,month,Year}=req.body
     
     console.log(doctorId)
     const Reservation= new reservation({
+    name:name,
     doctorId:doctorId,
     patientId:patientId,
     dayOfWeek:dayOfWeek,
@@ -292,22 +295,42 @@ router.post('/emailverification',(req,res)=>{
       return res.json({message:"reservetion faild",status:404})})
     
     })
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     
+    
+    router.post("/doctors-list",async (req,res)=>{
+      profile.find()
+     .then(result=>{
+     res.json({data:result,status:200})
+     })
+     .catch(err=>{console.log("err finding the profile",err)
+       res.json({message:"something went wrong try again later",status:404})
+     })
+     })
+      router.post("/apoinmments",(req,res)=>{
+  
+      let {userId} =req.body
+      console.log(userId)
+      reservation.find({doctorId:userId}).then(result=>{if(result){res.json({result,status:200})}
+      else{res.json({message:"wrong id",status:404})}
+      })
+      .catch(err=>{console.log("err viewing apoinment : ",err)
+        res.json({message:"internal error",status:404})})
+      })
+
+      router.post("/avalible-apoinmments",(req,res)=>{
+  
+        let {userId} =req.body
+        console.log(userId)
+        Schedule.find({userId:userId,"timeSlots": { $elemMatch: { available: true } }})
+        .then(result=>{if(result){res.json({result,status:200})}
+        else{res.json({message:"wrong id",status:404})}
+        })
+        .catch(err=>{console.log("err viewing apoinment : ",err)
+          res.json({message:"internal error",status:404})})
+        })
+
+
+
+
+
   module.exports = router

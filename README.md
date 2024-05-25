@@ -167,7 +167,6 @@ res:{ "result": [
 
 post  /edit-profile
 req:{               _id:_id (the id of the profile document)
-                    if(there is new img) img: file  not the link
                     phone: { type: String},
                     Name: { type: String, required: true },
                     address: { type: String },
@@ -178,3 +177,59 @@ res:        {
         message:String,
         status:int
             }
+        post    /new-profileImage
+        _id : String( the id of the profile)
+        image : the new image
+
+
+
+
+  post  /edit-profile
+    req:{
+        userId:String
+        phone: String,
+        Name: String,
+        address: String,
+        workdays:array of String,
+        startTime:String,
+        endTime:String,
+        step:String
+
+       }
+       res:{
+        message:String
+        status: int
+       }
+
+
+    post  /apoinmments
+    req:{
+        userId:String
+        
+       }
+       res:{
+        result:{
+            doctorId :String,
+            patientId:String,
+            dayOfWeek:String,
+            dayOfMonth:String,
+            TimeOfDay:String,
+            month:String,
+            Year:String
+                }
+        status: int
+       }
+
+
+
+       /new-profileImage
+       res:{
+        image:file
+        _id:string(id of profile)
+
+       }
+res:{
+        message:string
+        link:string
+        status:int
+        }

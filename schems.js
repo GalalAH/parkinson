@@ -62,7 +62,6 @@ const Patientschema = new schema({
     address: { type: String },
     age: { type: String, required: true },  // 
     gender: { type: String, required: true },
-    illness: { type: String },
     score:{type: String}
 })
 

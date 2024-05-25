@@ -7,6 +7,7 @@ const fs = require('fs');
 // Inside your endpoint after receiving the file
 
 const {profile}=require("./schems")
+const{patientUser}=require('./patientschema')
 async function authorize(){
 const jwtClient = new google.auth.JWT(
 apikey.client_email,
@@ -50,7 +51,42 @@ return link
 
   }
 
+}
 
+
+async function patientuploadfile(authclient,img,id){
+  try{
+   
+const drive = google.drive({version:"v3",auth:authclient})
+const filemetadata = {
+   name:img.name,
+   parents:["1XXA8L-vQ8llrkkmGdDuFgCgcKrZ_pptM"]
+  }
+  console.log(id)
+  console.log(img.mimetype)
+  const response = await drive.files.create({
+    resource:filemetadata,
+    media:{
+    mimeType: img.mimetype,
+    body: Readable.from(img.data)} ,
+    fields: 'id, webViewLink'
+  })
+  
+
+console.log("response",response.data.webViewLink)
+const link = await response.data.webViewLink
+patientUser.findByIdAndUpdate(id,{img:link})
+
+.catch((err)=>{console.log(err)})
+
+return link
+}catch(err){console.log(err)
+    console.log("img not uploaded")
+
+  }
 
 }
-module.exports ={authorize,uploadfile}
+
+
+
+module.exports ={authorize,uploadfile,patientuploadfile}
