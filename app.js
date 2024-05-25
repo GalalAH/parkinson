@@ -377,7 +377,7 @@ Name:name,
 gender:gender,
 age:age,
 address:address,
-illness:""
+score:"not measured"
 })
 Patient.save()
 .then((result)=>{console.log(result)
