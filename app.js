@@ -594,6 +594,8 @@ else{res.json({message:"wrong id",status:404})}
 
 app.post('/score',(req,res)=>{
 let{userId,score}=req.body
+  console.log(score)
+  console.log(userId)
 patient.updateOne({userId:userId},{score:score}).
 then(result=>{res.json({message:"score updated successfully",status:200})})
 .catch(err=>{console.log(err)
