@@ -321,40 +321,6 @@ app.post('/emailverification',async(req,res)=>{
   })
 //doctor dashborad
 
-app.post("/PatientList",async(req,res)=>{
-  
- try{
-  const id = req.body.userId
-   patient.find({userId: id}).then((result)=>{
-    res.json({result,status:200})
- }).catch((err)=>{res.json({message:"something went wrong try again later in PatientList",status:404})
-console.log(err)})}catch(err){console.log(err)
-  res.json({message:"login first"})}
-})
-
-app.post("/addPateint",async(req,res)=>{
-  
-let {name,phone,gender,age,address,userId}=req.body
-  console.log(name)
-const Patient = new patient({
-userId:userId,
-phone:phone,
-Name:name,
-gender:gender,
-age:age,
-address:address,
-illness:false
-})
-Patient.save()
-.then((result)=>{console.log(result)
- res.json({message:"added successfully",status:200})
-}
- )
-  .catch((err)=>{console.log("err in adding the patient :"+ err)
-  res.json({message:"something went wrong try again later",status:404})})
-})
-
-//doctor dashborad
 
 app.post("/PatientList",async(req,res)=>{
   try{
@@ -550,6 +516,7 @@ app.post('/profile',async (req,res)=>{
 
 app.post("/edit-profile",async(req,res)=>{
   let {name,address,phone, startTime, endTime, step,workdays,userId}=req.body 
+
   console.log(userId)
    await profile.findOneAndUpdate({userId:userId},{
     phone: phone,
@@ -561,7 +528,7 @@ app.post("/edit-profile",async(req,res)=>{
     step:step
     })
     .then(result=>{Schedule.deleteMany({userId:userId}).then(async()=>{
-
+      console.log(result)
       const now = new Date();
       const currentDayOfWeek = now.getDay();
       const weeklySchedules = await generateWeeklySchedules(userId,currentDayOfWeek, startTime, endTime, step,workdays );
@@ -587,16 +554,6 @@ app.post("/edit-profile",async(req,res)=>{
                     })
               })
 
-
-  app.post("/doctors-list",async (req,res)=>{
-    profile.find()
-   .then(result=>{
-   res.json({data:result,status:200})
-   })
-   .catch(err=>{console.log("err finding the profile",err)
-     res.json({message:"something went wrong try again later",status:404})
-   })
-   })
   app.post("/logout",(req,res)=>{
     try{
         req.logOut(()=>{return res.json({message:"loged out successfully",status:200})})
@@ -625,11 +582,21 @@ app.post("/apoinmments",(req,res)=>{
   
 let {userId} =req.body
 console.log(userId)
-reservation.find({doctorId:userId}).then(result=>{if(result){res.json({result,status:200})}
-else{return res.json({message:"wrong id",status:404})}
+
+reservation.find({patientId:userId}).then(result=>{if(result){res.json({result,status:200})}
+else{res.json({message:"wrong id",status:404})}
+
 })
 .catch(err=>{console.log("err viewing apoinment : ",err)
  return res.json({message:"internal error",status:404})})
 })
 
+
+app.post('/score',(req,res)=>{
+let{userId,score}=req.body
+patient.updateOne({userId:userId},{score:score}).
+then(result=>{res.json({message:"score updated successfully",status:200})})
+.catch(err=>{console.log(err)
+  res.json({message:"score update failed",status:404})})
+})
 

@@ -31,6 +31,7 @@ expiresAT:Date
 
 
 const User = new mongoose.Schema({
+    img:String,
     password: {
       type: String,
       required: true
@@ -50,8 +51,9 @@ const User = new mongoose.Schema({
     },
     phone: {
       type: String,
-    
+
     },
+    gender:String,
     forgetpassword: {
       type: String  // Assuming this is a string field
     },
@@ -66,20 +68,10 @@ const User = new mongoose.Schema({
 //pateints schema
 
 
-const profileschema= new schema({
-    img:String,
-    userId :String,
-    phone: { type: String},
-    Name: { type: String, required: true },
-    address: { type: String },
-    workdays:{type:Array},
-    startTime:String, endTime:String, step:String
-})
 
 const patientUser = mongoose.model("patientUser",User)
 const patientVerification = mongoose.model("patientVerification",patientVerificationschema )
 const reservation = mongoose.model("reserved",reservedApoinmentschema )
-const profile = mongoose.model("patientprofile",profileschema)
-module.exports ={patientUser,patientVerification,profile,reservation}
+module.exports ={patientUser,patientVerification,reservation}
 
   
