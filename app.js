@@ -195,9 +195,9 @@ status: 200
               .then(async (profilecheck) => {
                 if (profilecheck) {
                   const Profile = await profile.findOne({ _id: profilecheck });
-                  return res.status(200).json({ message: 'Authentication successful',Profilecheck: false, status: 200,userId:id, data: Profile, Profilecheck: true });
+                  return res.status(200).json({ message: 'Authentication successful', status: 200,userId:id, data: Profile, Profilecheck: true });
                 } else {
-                  return res.status(200).json({ message: 'Authentication successful',Profilecheck: false, status: 200, userId:id,Profilecheck: false });
+                  return res.status(200).json({ message: 'Authentication successful', status: 200, userId:id,Profilecheck: false });
                 }
               })
               .catch((err) => {
