@@ -585,7 +585,7 @@ let {userId} =req.body
 console.log(userId)
 
 reservation.find({doctorId:userId}).then(async result=>{
-    if(reserve){res.json({result,status:200})}
+    if(result){res.json({result,status:200})}
     else{res.json({message:"wrong id",status:404})}
 
 })
