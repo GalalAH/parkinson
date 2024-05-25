@@ -596,7 +596,7 @@ app.post('/score',(req,res)=>{
 let{userId,score}=req.body
   console.log(score)
   console.log(userId)
-patient.updateOne({userId:userId},{score:score}).
+patient.updateOne({_id:userId},{score:score}).
 then(result=>{res.json({message:"score updated successfully",status:200})})
 .catch(err=>{console.log(err)
   res.json({message:"score update failed",status:404})})
