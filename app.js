@@ -584,8 +584,8 @@ app.post("/apoinmments",(req,res)=>{
 let {userId} =req.body
 console.log(userId)
 
-reservation.find({doctorId:userId}).then(async reserve=>{
-    if(reserve){res.json({reserve,status:200})}
+reservation.find({doctorId:userId}).then(async result=>{
+    if(reserve){res.json({result,status:200})}
     else{res.json({message:"wrong id",status:404})}
 
 })
