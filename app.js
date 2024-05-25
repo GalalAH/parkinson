@@ -551,7 +551,6 @@ app.post('/profile',async (req,res)=>{
 app.post("/edit-profile",async(req,res)=>{
   let {name,address,phone, startTime, endTime, step,workdays,userId}=req.body 
   
-  const File = req.files.image;
    await profile.findOneAndUpdate({userId:userId},{
     phone: phone,
     name: name,
