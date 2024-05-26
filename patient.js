@@ -85,7 +85,7 @@ router.post('/signup',async (req,res)=>{
     if(emailcheck){
       return res.json({message : "this email is already used",status:404})
   }
-   
+   console.log(password)
  const hashedpass = await bycrypt.hash(password,10)
  const User = new patientUser({  
   gender:gender,
