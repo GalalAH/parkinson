@@ -264,7 +264,7 @@ router.post('/emailverification',(req,res)=>{
   .then(result=>{
     const _id=result._id
     patientverifiy(_id,code,res)
-    }).catch(err=>{conole.log(err)
+    }).catch(err=>{console.log(err)
     res.json({message:"cannot find the user",status:404})    
     })
 
