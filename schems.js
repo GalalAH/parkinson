@@ -9,17 +9,8 @@ createdAt:Date,
 expiresAT:Date
 })
 ///////////
- // reseerved apoinmments
-
-  
-
-
-
-
 
 //  user shema
-
-
 const User = new mongoose.Schema({
     password: {
       type: String,
@@ -53,6 +44,7 @@ const User = new mongoose.Schema({
 
  
 
+
 //pateints schema
 
 const Patientschema = new schema({
@@ -62,14 +54,15 @@ const Patientschema = new schema({
     address: { type: String },
     age: { type: String, required: true },  // 
     gender: { type: String, required: true },
-    score:{type: String}
+    score:{type:String }
+
 })
 
 const profileschema= new schema({
     img:String,
     userId :String,
     phone: { type: String},
-    Name: { type: String, required: true },
+    name: { type: String, required: true },
     address: { type: String },
     workdays:{type:Array},
     startTime:String, endTime:String, step:String

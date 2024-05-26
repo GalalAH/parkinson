@@ -86,7 +86,7 @@ async email => {
 
 router.post('/signup',async (req,res)=>{
   
-  let {password,email,name,phone,gender} = req.query  
+  let {password,email,name,phone,gender} = req.body 
   try{
     if(!req.files){return res.json({message:"no image was uploaded",status:404})}
     const emailcheck =await patientUser.exists({Email:email})
@@ -94,7 +94,7 @@ router.post('/signup',async (req,res)=>{
     if(emailcheck){
       return res.json({message : "this email is already used",status:404})
   }
-   
+   console.log(password)
  const hashedpass = await bycrypt.hash(password,10)
  const User = new patientUser({  
   gender:gender,
@@ -126,6 +126,7 @@ User.save()
    router.post('/login', (req, res,next) => {
     try{
     let { password, email } = req.body;
+      console.log(password)
     patientUser.findOne({ Email: email })
       .then((data) => {
         if (!data) {
@@ -394,5 +395,3 @@ res.send({link:newlink})
   module.exports = router
 
 
-
-  
