@@ -584,8 +584,10 @@ app.post("/apoinmments",(req,res)=>{
 let {userId} =req.body
 console.log(userId)
 
+
 reservation.find({doctorId:userId}).then(async result=>{
     if(result){res.json({result,status:200})}
+
     else{res.json({message:"wrong id",status:404})}
 
 })
@@ -615,7 +617,7 @@ app.post("/find-apoinmment",async(req,res)=>{
   const searchparam= req.body.param
   const regex = new RegExp(`^${searchparam}`, 'i')
   const query = {
-    doctorId:id,
+    wId:id,
     $or: [
       {
         dayOfWeek: { $regex: regex },

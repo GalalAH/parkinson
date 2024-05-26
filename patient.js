@@ -12,6 +12,15 @@ const login = require('./config/login-config')
 const passport = require('passport');
 const { appendFile } = require('fs');
 
+
+
+function convertDriveLink(originalLink) {
+  const start = originalLink.indexOf('/d/') + 3;
+  const end = originalLink.indexOf('/view');
+  const fileId = originalLink.substring(start, end);
+  
+  return `https://drive.google.com/uc?id=${fileId}&export=download`;}
+
 const transport =nodemailer.createTransport({
   service:'gmail',
   auth:{
@@ -141,8 +150,8 @@ User.save()
               return  res.status(401).json({ message: 'Authentication failed', status: 404 });
             }
             const id = user._id
-          
-            return res.status(200).json({ message: 'Authentication successful', status: 200,userId:id, data:data});
+            link=convertDriveLink(data.img)
+            return res.status(200).json({ message: 'Authentication successful', status: 200,userId:id, data:data,link:link});
                 
           
               })
@@ -366,6 +375,23 @@ router.post('/emailverification',(req,res)=>{
           res.json({message:"something went wrong try again later",status:404})}
         })
       
+router.post("/linktest",(req,res)=>{
+
+
+let {link}= req.body
+
+newlink=convertDriveLink(link)
+console.log(link)
+res.send({link:newlink})
+})
+
+
+
+
+
+
 
 
   module.exports = router
+
+
