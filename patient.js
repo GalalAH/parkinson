@@ -86,7 +86,7 @@ async email => {
 
 router.post('/signup',async (req,res)=>{
   
-  let {password,email,name,phone,gender} = req.query
+  let {password,email,name,phone,gender} = req.body
   try{
     if(!req.files){return res.json({message:"no image was uploaded",status:404})}
     const emailcheck =await patientUser.exists({Email:email})
