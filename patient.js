@@ -117,6 +117,7 @@ User.save()
    router.post('/login', (req, res,next) => {
     try{
     let { password, email } = req.body;
+      console.log(password)
     patientUser.findOne({ Email: email })
       .then((data) => {
         if (!data) {
