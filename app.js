@@ -554,7 +554,8 @@ app.post("/apoinmments",(req,res)=>{
 let {userId} =req.body
 console.log(userId)
 reservation.find({doctorId:userId}).then(async reserve=>{
-    if(reserve){res.json({reserve,status:200})}
+    
+    if(reserve){res.json({reserve,link:result.img,status:200})}
     else{res.json({message:"wrong id",status:404})}
 })
 .catch(err=>{console.log("err viewing apoinment : ",err)
@@ -579,7 +580,7 @@ app.post("/find-apoinmment",async(req,res)=>{
   const searchparam= req.body.param
   const regex = new RegExp(`^${searchparam}`, 'i')
   const query = {
-    doctorId:id,
+    wId:id,
     $or: [
       {
         dayOfWeek: { $regex: regex },
