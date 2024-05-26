@@ -478,7 +478,7 @@ app.post('/profile',async (req,res)=>{
      console.log("img link",link)
      const now = new Date();
      const currentDayOfWeek = now.getDay();
-     const weeklySchedules = await generateWeeklySchedules(id,currentDayOfWeek, startTime, endTime, step,workdays );
+     const weeklySchedules = await generateWeeklySchedules(userId,currentDayOfWeek, startTime, endTime, step,workdays );
  // Save the generated weekly schedules to MongoDB
  Schedule.insertMany(weeklySchedules)
    .then(async () => {
