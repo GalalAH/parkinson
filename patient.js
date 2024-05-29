@@ -13,7 +13,7 @@ const passport = require('passport');
 const { appendFile } = require('fs');
 const session = require('express-session');
 router.use(passport.initialize())
-router.use(flash())
+
 router.use(passport.initialize())
 router.use(passport.session())
 
