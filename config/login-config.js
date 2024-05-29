@@ -8,6 +8,7 @@ const Localstrategy =require("passport-local").Strategy
     
     
     if(user==null){
+     console.log("login email",email)
 return done(null,false,{message:'no user with that email'})
     }
     
