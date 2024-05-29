@@ -87,6 +87,7 @@ async email => {
 router.post('/signup',async (req,res)=>{
   
   let {password,email,name,phone,gender} = req.body
+  
   try{
     if(!req.files){return res.json({message:"no image was uploaded",status:404})}
     const emailcheck =await patientUser.exists({Email:email})
@@ -105,15 +106,17 @@ router.post('/signup',async (req,res)=>{
   verified:false,
   img:""
 })
-
+console.log("frist user",User)
 
 User.save()
 .then((result)=>{
+  console.log("result :",result)
   sendverificationemail(result,res)
   authorize().then(async result =>{const link = await patientuploadfile(result,req.files.image,User._id)
    User.img=link
    User.save() 
-  return res.json({message:"img uploaded successfully",link:link,status:200})
+  console.log("secand user",User)                            
+  return res.json({message:"img uploaded successfully",,link:link,status:200})
   })
 
 })
@@ -127,6 +130,7 @@ User.save()
     try{
     let { password, email } = req.body;
       console.log(password)
+      console.log(email)
     patientUser.findOne({ Email: email })
       .then((data) => {
         if (!data) {
@@ -137,7 +141,9 @@ User.save()
         }
         // Call passport.authenticate() to authenticate the user
         passport.authenticate('local', (err, user, info) => {
+          console.log(info)
           if (err) {
+      
             return res.status(500).json({ message: 'Internal Server Error', status: 404 });
           }
           if (!user) {
