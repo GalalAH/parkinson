@@ -76,6 +76,7 @@ return res.json({message:"internal error",status:404})})
 login(
 passport,
 async email => { 
+  console.log("login email",email)
   return  await patientUser.findOne({Email:email})
   },
   async id => { 
