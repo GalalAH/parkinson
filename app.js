@@ -29,7 +29,7 @@ const app = express()
 const bycrypt =require("bcrypt")
 const mongoose = require("mongoose")
 const dbURI= process.env.DB_URI
-mongoose.connect(dbURI)
+mongoose.connect(dbURI,{ useNewUrlParser: true, useUnifiedTopology: true })
 .then(app.listen(process.env.PORT||5050,()=>{
   console.log('server is running ')
 }))
