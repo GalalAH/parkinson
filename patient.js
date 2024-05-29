@@ -116,7 +116,7 @@ User.save()
    User.img=link
    User.save() 
   console.log("secand user",User)                            
-  return res.json({message:"img uploaded successfully",,link:link,status:200})
+  return res.json({message:"img uploaded successfully",link:link,status:200})
   })
 
 })
