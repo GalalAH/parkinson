@@ -134,41 +134,25 @@ User.save()
    router.post('/login', (req, res,next) => {
     try{
     let { password, email } = req.body;
-      console.log(password)
-      console.log(email)
     patientUser.findOne({ Email: email })
-      .then((data) => {
+      .then(async (data) => {
         if (!data) {
           return res.status(404).json({ message: "wrong email", status: 404 });
         }
         if (!data.verified) {
           return res.status(404).json({ message: "User isn't verified", status: 404 });
         }
-        // Call passport.authenticate() to authenticate the user
-        passport.authenticate('local', (err, user, info) => {
-          console.log(info)
-          if (err) {
-      
-            return res.status(500).json({ message: 'Internal Server Error', status: 404 });
-          }
-          if (!user) {
-            // Authentication failed
-            return res.status(401).json({ message: 'Authentication failed : wrong password', status: 404 });
-          }
+        // Call passport.authenticate() to authenticate the use
+        
+        // Authentication failed
           // Authentication successful, set req.user and continue
-          req.logIn(user, (err) => {
-            if (err) {
-              return  res.status(401).json({ message: 'Authentication failed', status: 404 });
-            }
+          if (await bycrypt.compare(password,data.password)){
             const id = user._id
             link=convertDriveLink(data.img)
             return res.status(200).json({ message: 'Authentication successful', status: 200,userId:id, data:data,link:link});
-                
-          
-              })
               
-        })(req, res, next);
-      })
+              }else{return res.status(200).json({ message: 'wrong password', status: 404})
+        }})
       .catch((err) => {
         console.log(err);
         return res.status(500).json({ message: 'Internal Server Error', status: 500 });
