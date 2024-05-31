@@ -3,7 +3,12 @@ const apikey =require("./drive_api.json")
 const SCOPE= ["https://www.googleapis.com/auth/drive"]
 const { Readable } =  require('stream')
 const fs = require('fs');
-
+function convertDriveLink(originalLink) {
+  const start = originalLink.indexOf('/d/') + 3;
+  const end = originalLink.indexOf('/view');
+  const fileId = originalLink.substring(start, end);
+  
+  return `https://drive.google.com/uc?id=${fileId}&export=download`;}
 // Inside your endpoint after receiving the file
 
 const {profile}=require("./schems")
@@ -42,7 +47,8 @@ const filemetadata = {
   
 
 console.log("response",response.data.webViewLink)
-const link = await response.data.webViewLink
+const link = await convertDriveLink(await response.data.webViewLink)  
+  
 profile.findByIdAndUpdate(id,{img:link})
 
 .catch((err)=>{console.log(err)})
