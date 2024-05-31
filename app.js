@@ -466,7 +466,7 @@ app.post('/profile',async (req,res)=>{
     let {name,address,phone, startTime, endTime, step,workdays,userId}=req.body
     const Profile = new profile({
       userId:userId,
-      name:name, 
+      Name:name, 
       address:address,
       phone:phone,
       img:"",
@@ -527,7 +527,7 @@ app.post("/edit-profile",async(req,res)=>{
   console.log(userId)
    await profile.findOneAndUpdate({userId:userId},{
     phone: phone,
-    name: name,
+    Name: name,
     address: address,
     workdays:workdays,
     startTime:startTime,
