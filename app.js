@@ -9,6 +9,12 @@ const fileUpload = require('express-fileupload');
 
 require('dotenv').config()
 
+function convertDriveLink(originalLink) {
+  const start = originalLink.indexOf('/d/') + 3;
+  const end = originalLink.indexOf('/view');
+  const fileId = originalLink.substring(start, end);
+  
+  return `https://drive.google.com/uc?id=${fileId}&export=download`;}
 const {generateWeeklySchedules,AutdSchedule}=require("./apoinmment")
 const multer = require('multer');
 const storage = multer.memoryStorage();
