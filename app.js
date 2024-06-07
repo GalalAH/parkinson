@@ -27,7 +27,6 @@ const login = require('./config/login-config')
 const passport = require('passport')
 const session = require('express-session');
 const {verifiy} = require('./verification');
-const router = require('./patient');
 const transport =nodemailer.createTransport({
   service:'gmail',
   auth:{
@@ -81,6 +80,7 @@ console.log("pending")
 login(
 passport,
 async email => { 
+  console.log(email)
   return  await user.findOne({Email:email})
   },
   async id => { 
@@ -101,6 +101,7 @@ saveUninitialized:false
 }))
 app.use('/patient',patientRoute)
 app.use(morgan('tiny'))
+
 app.use(flash())
 app.use(passport.initialize())
 app.use(passport.session())
@@ -553,9 +554,9 @@ app.post("/apoinmments",(req,res)=>{
   
 let {userId} =req.body
 console.log(userId)
-reservation.find({doctorId:userId}).then(async reserve=>{
+reservation.find({doctorId:userId}).then(async result=>{
     
-    if(reserve){res.json({reserve,link:result.img,status:200})}
+    if(result){res.json({result,link:result.img,status:200})}
     else{res.json({message:"wrong id",status:404})}
 })
 .catch(err=>{console.log("err viewing apoinment : ",err)
@@ -612,3 +613,30 @@ app.delete('/deleteall',async(req,res)=>{
 patient.deleteMany({userId:id}).then(res.json("all deleted"))
 
 })
+
+app.post("/cancel-apoinmment",(req,res)=>{
+  let {userId,dayOfMonth,month,year,TimeOfDay,doctorId} =req.body
+  console.log(userId)
+  reservation.updateOne({doctorId:userId,dayOfMonth,month,year,TimeOfDay},{status:"canceled"}).then(async result=>{
+    if(result){
+    Schedule.findOneAndUpdate( { 
+      userId:doctorId,
+      month:month,
+      Year:year,
+      dayOfMonth:dayOfMonth
+  },
+  { 
+    $set: { 'timeSlots.$[slot].available': true } 
+  },
+  {
+    arrayFilters: [{ 'slot.time': TimeOfDay}]
+  }).then((result)=>{console.log(result)
+    return res.json({message:" the appinment got canceled",status:200})
+
+})}else{return res.json({message:"didn't find the appinment",status:404})}
+ 
+  })
+  .catch(err=>{console.log("err canclleing apoinment : ",err)
+  return res.json({message:"internal err",status:404})
+    })
+  })

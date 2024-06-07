@@ -11,8 +11,10 @@ const{Schedule,profile, user}=require("./schems")
 const login = require('./config/login-config')
 const passport = require('passport');
 const { appendFile } = require('fs');
-
-
+const session = require('express-session');
+router.use(passport.initialize())
+router.use(passport.initialize())
+router.use(passport.session())  
 
 function convertDriveLink(originalLink) {
   const start = originalLink.indexOf('/d/') + 3;
@@ -47,7 +49,6 @@ html:`<p>verify your eamil address to complete the singup and login into your ac
 
 }
 
-
 const newVerification = new patientVerification({
 userId:_id,
 verificationCode:hashedverificationCode,
@@ -76,6 +77,7 @@ return res.json({message:"internal error",status:404})})
 login(
 passport,
 async email => { 
+  console.log("login email",email)
   return  await patientUser.findOne({Email:email})
   },
   async id => { 
@@ -127,36 +129,24 @@ User.save()
     try{
     let { password, email } = req.body;
     patientUser.findOne({ Email: email })
-      .then((data) => {
+      .then(async (data) => {
         if (!data) {
           return res.status(404).json({ message: "wrong email", status: 404 });
         }
         if (!data.verified) {
           return res.status(404).json({ message: "User isn't verified", status: 404 });
         }
-        // Call passport.authenticate() to authenticate the user
-        passport.authenticate('local', (err, user, info) => {
-          if (err) {
-            return res.status(500).json({ message: 'Internal Server Error', status: 404 });
-          }
-          if (!user) {
-            // Authentication failed
-            return res.status(401).json({ message: 'Authentication failed : wrong password', status: 404 });
-          }
+        // Call passport.authenticate() to authenticate the use
+        
+        // Authentication failed
           // Authentication successful, set req.user and continue
-          req.logIn(user, (err) => {
-            if (err) {
-              return  res.status(401).json({ message: 'Authentication failed', status: 404 });
-            }
+          if (await bycrypt.compare(password,data.password)){
             const id = user._id
             link=convertDriveLink(data.img)
             return res.status(200).json({ message: 'Authentication successful', status: 200,userId:id, data:data,link:link});
-                
-          
-              })
               
-        })(req, res, next);
-      })
+              }else{return res.status(200).json({ message: 'wrong password', status: 404})
+        }})
       .catch((err) => {
         console.log(err);
         return res.status(500).json({ message: 'Internal Server Error', status: 500 });
@@ -263,7 +253,7 @@ router.post('/emailverification',(req,res)=>{
   .then(result=>{
     const _id=result._id
     patientverifiy(_id,code,res)
-    }).catch(err=>{conole.log(err)
+    }).catch(err=>{console.log(err)
     res.json({message:"cannot find the user",status:404})    
     })
 
@@ -330,9 +320,9 @@ router.post('/emailverification',(req,res)=>{
 
       router.post("/avalible-apoinmments",(req,res)=>{
   
-        let {userId} =req.body
+        let {userId,month,Year,dayOfMonth} =req.body
         console.log(userId)
-        Schedule.find({userId:userId,"timeSlots": { $elemMatch: { available: true } }})
+        Schedule.find({userId:userId,dayOfMonth,Year,month,"timeSlots": { $elemMatch: { available: true } }})
         .then(result=>{if(result){res.json({result,status:200})}
         else{res.json({message:"wrong id",status:404})}
         })
@@ -384,11 +374,74 @@ console.log(link)
 res.send({link:newlink})
 })
 
+router.get('/fix',(req,res)=>{
+profile.find().then(async result=>{
+for(let doc of result){
+let link =convertDriveLink(doc.img)
+doc.img=link
+await doc.save()
+console.log(doc)
+}
+console.log(result)
+res.send("done converting")
+})
 
 
 
+})
+router.post("/cancel-apoinmment",(req,res)=>{
+  let {userId,dayOfMonth,month,year,TimeOfDay,doctorId} =req.body
+  console.log(userId)
+  reservation.updateOne({patientId:userId,dayOfMonth,month,year,TimeOfDay},{status:"canceled"}).then(async result=>{
+    if(result){
+    Schedule.findOneAndUpdate( { 
+      userId:doctorId,
+      month:month,
+      Year:year,
+      dayOfMonth:dayOfMonth
+  },
+  { 
+    $set: { 'timeSlots.$[slot].available': true } 
+  },
+  {
+    arrayFilters: [{ 'slot.time': TimeOfDay}]
+  }).then((result)=>{console.log(result)
+    return res.json({message:" the appinment got canceled",status:200})
+
+})}else{return res.json({message:"didn't find the appinment",status:404})}
+ 
+  })
+  .catch(err=>{console.log("err canclleing apoinment : ",err)
+  return res.json({message:"internal err",status:404})
+    })
+  })
 
 
+  router.post("/edit-profile",async(req,res)=>{
+    let { gender, phone,name, email ,userId}=req.body 
+    
+     await patientUser.findOneAndUpdate({_id:userId},{
+      gender:gender,
+      phone:phone,
+      username:name,
+      Email:email 
+      })
+      .then(result=>{console.log(result)
+        return res.json({message:"edited successfully"})
+      }).catch(err=>{console.log(err)
+      return res.json({message:"internal err",status:404})})
+                    })
+      router.post("/new-profileImage",(req,res)=>{
+        let {_id} = req.body
+          if(req.files){
+            authorize().then(async result =>{const link = await patientuploadfile(result,req.files.image,_id)
+            
+              return res.json({message:"img uploaded successfully",link:link,status:200})
+            })
+      
+            }
+          res.json({message:"img was not uploaded ",status:404})
+        })
 
 
   module.exports = router

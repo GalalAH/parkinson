@@ -4,12 +4,12 @@ const Localstrategy =require("passport-local").Strategy
 
  function initilaize(passport,getUserByEmail,getUserById){
     const authenticateuser =async (email,password,done)=>{
-    const user = await getUserByEmail(email)
-    
-    
-    if(user==null){
-return done(null,false,{message:'no user with that email'})
-    }
+        const user = await getUserByEmail(email)
+        
+        
+        if(user==null){
+    return done(null,false,{message:'no user with that email'})
+        }
     
    
      try{if (await bycrypt.compare(password,user.password)){
