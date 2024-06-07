@@ -1,6 +1,21 @@
 const bycrypt =require("bcrypt")
 const  {UserVerification,user}=require("./schems")
 const {patientVerification,patientUser} =require("./patientschema")
+
+
+
+
+  async function checkNumber(number,res) {
+    try {
+      if(!number) return res.send("no phone included")
+      console.log(number)
+        const isRegistered = await client.isRegisteredUser(number);
+        console.log(isRegistered ? 'Number is on WhatsApp' : 'Number is not on WhatsApp');
+        return isRegistered
+    } catch (error) {
+        console.error('Error checking number:', error);
+    }
+  }
 const verifiy = async (_id,verificationCode,res)=>{
     console.log("id",_id)
   console.log("verificationCode",verificationCode)
@@ -94,6 +109,7 @@ res.send({message:"account don't exist",staus:404})}
   .catch((err)=>console.log(err)) }
 
 
-  module.exports={verifiy,patientverifiy }
+  
+  module.exports={verifiy,patientverifiy,checkNumber}
 
 

@@ -2,7 +2,7 @@ drive_api.json
 package-lock.json
 .env
 node_modules
-
+.wwebjs_auth
 
 
 

@@ -5,7 +5,7 @@ require('dotenv').config()
 //const schedule = require('node-schedule');
 const {authorize,patientuploadfile}=require('./imgUploader')
 const nodemailer = require('nodemailer')
-const {patientUser,patientVerification,reservation} =require("./patientschema")
+const {patientUser,patientVerification,reservation,rate} =require("./patientschema")
 const bycrypt =require("bcrypt")
 const{Schedule,profile, user}=require("./schems")
 const login = require('./config/login-config')
@@ -260,11 +260,12 @@ router.post('/emailverification',(req,res)=>{
   })
   router.post('/reserve',(req,res)=>{
 
-    let {name,doctorId,dayOfWeek,patientId,TimeOfDay,dayOfMonth,month,Year,link}=req.body
+    let {doctorlink,patientName,doctorName,doctorId,dayOfWeek,patientId,TimeOfDay,dayOfMonth,month,Year,link}=req.body
     
     console.log(doctorId)
     const Reservation= new reservation({
-    name:name,
+    doctorName:doctorName,
+    patientName:patientName,
     doctorId:doctorId,
     patientId:patientId,
     dayOfWeek:dayOfWeek,
@@ -272,7 +273,8 @@ router.post('/emailverification',(req,res)=>{
     TimeOfDay:TimeOfDay,
     month:month,
     Year:Year,
-    img:link
+    img:link,
+    doctorimg:doctorlink
     })
     Reservation.save().then(result=>{
       console.log(dayOfMonth)
@@ -390,15 +392,12 @@ res.send("done converting")
 
 })
 router.post("/cancel-apoinmment",(req,res)=>{
-  let {userId,dayOfMonth,month,year,TimeOfDay,doctorId} =req.body
-  console.log(userId)
-  reservation.updateOne({patientId:userId,dayOfMonth,month,year,TimeOfDay},{status:"canceled"}).then(async result=>{
+  let {reservationId,apoinmmentId} =req.body
+  console.log(reservationId)
+  reservation.updateOne({_id:reservationId},{status:"canceled"}).then(async result=>{
     if(result){
     Schedule.findOneAndUpdate( { 
-      userId:doctorId,
-      month:month,
-      Year:year,
-      dayOfMonth:dayOfMonth
+    _id:apoinmmentId
   },
   { 
     $set: { 'timeSlots.$[slot].available': true } 
@@ -421,7 +420,7 @@ router.post("/cancel-apoinmment",(req,res)=>{
     let { gender, phone,name, email ,userId}=req.body 
     
      await patientUser.findOneAndUpdate({_id:userId},{
-      gender:gender,
+    
       phone:phone,
       username:name,
       Email:email 
@@ -439,9 +438,44 @@ router.post("/cancel-apoinmment",(req,res)=>{
               return res.json({message:"img uploaded successfully",link:link,status:200})
             })
       
-            }
-          res.json({message:"img was not uploaded ",status:404})
+            }else{ res.json({message:"img was not uploaded ",status:404})}
+         
         })
+
+ router.post("/rate",async(req,res)=>{
+  let{userId,rating}=req.body
+  if(!userId) return res.json({message:"no id was sent",status:404})
+  const doctorrate = await rate.findOne({ userId });
+
+  if (doctorrate) {
+      // Update the existing rating
+      await rate.updateOne(
+          { userId },
+          {
+              $inc: { totalrate: rating, ratecount: 1 },
+          }
+      );
+  } else {
+      // Insert a new product rating
+      await rate.insertOne({
+          userId,
+          totalrate: rating,
+          ratecount: 1,
+      });
+  }
+ await rate.findOne({ userId }).then(result=>{
+  const averageRating = result.totalrate/ result.ratecount;
+   const Rate= (Math.round(averageRating * 10) / 10).toString;
+  profile.update({userId:userId},{
+    rate:Rate
+  }).then(result=>{
+  console.log(result)
+  res.json({message:"rated successfully",Rate,status:200})
+  }).catch(err=>{console.log(err)
+  res.json({message:"internal error",status:404})})
+ })
+ })
+
 
 
   module.exports = router

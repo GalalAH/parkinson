@@ -30,6 +30,7 @@
     "passport": "^0.7.0",
     "passport-local": "^1.0.0",
     "stream": "^0.0.2",
-    "uuid": "^9.0.1"
+    "uuid": "^9.0.1",
+    "whatsapp-web.js": "^1.16.4-alpha.0"
   }
 }
