@@ -23,7 +23,7 @@ expiresAT:Date
   patientName:{type:String,required:true},
   status:{type:String},
   img:String,
-  doctorimg:Srting
+  doctorimg:String
 });
   
 
