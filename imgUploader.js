@@ -86,8 +86,8 @@ const filemetadata = {
 
 console.log("response",response.data.webViewLink)
 const link = await response.data.webViewLink
-const download =convertDriveLink(link)
-patientUser.findByIdAndUpdate(id,{img:download})
+
+patientUser.findByIdAndUpdate(id,{img:link})
 
 .catch((err)=>{console.log(err)})
 
