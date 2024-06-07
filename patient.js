@@ -438,8 +438,8 @@ router.post("/cancel-apoinmment",(req,res)=>{
       router.post("/new-profileImage",(req,res)=>{
         let {userId} = req.body
           if(req.files){
-            authorize().then(async result =>{const link = await patientuploadfile(result,req.files.image,userId)
-            
+            authorize().then(async result =>{const viewlink = await patientuploadfile(result,req.files.image,userId)
+             const link= convertDriveLink(viewlink)
               return res.json({message:"img uploaded successfully",link:link,status:200})
             })
       
