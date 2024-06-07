@@ -443,8 +443,8 @@ router.post("/cancel-apoinmment",(req,res)=>{
               return res.json({message:"img uploaded successfully",link:link,status:200})
             })
       
-            }
-          res.json({message:"img was not uploaded ",status:404})
+            }else{res.json({message:"img was not uploaded ",status:404})}
+          
         })
 
 
