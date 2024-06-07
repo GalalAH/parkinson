@@ -426,7 +426,6 @@ router.post("/cancel-apoinmment",(req,res)=>{
     let { gender, phone,name, email ,userId}=req.body 
     
      await patientUser.findOneAndUpdate({_id:userId},{
-      gender:gender,
       phone:phone,
       username:name,
       Email:email 
