@@ -19,9 +19,11 @@ expiresAT:Date
   TimeOfDay:{type:String,required:true},
   month:{type:String,required:true},
   Year:{type:String,required:true},
-  name:{type:String,required:true},
+  doctorName:{type:String,required:true},
+  patientName:{type:String,required:true},
   status:{type:String},
-  img:String
+  img:String,
+  doctorimg:Srting
 });
   
 
@@ -65,15 +67,22 @@ const UserPatient = new mongoose.Schema({
   });
   
 
- 
+  const rateschema= new schema({
+    userId:String,
+    ratecount:{type:Number,
+      default: 0},
+    totalrate:{type:Number,
+      default: 0}
+    })
 
 //pateints schema
 
 
+const rate= mongoose.model("rate",rateschema)
+const patientUser = mongoose.model("patientUser",User)
 
-const patientUser = mongoose.model("patientUser",UserPatient)
 const patientVerification = mongoose.model("patientVerification",patientVerificationschema )
 const reservation = mongoose.model("reserved",reservedApoinmentschema )
-module.exports ={patientUser,patientVerification,reservation}
+module.exports ={patientUser,patientVerification,reservation,rate}
 
   

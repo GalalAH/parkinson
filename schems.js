@@ -58,6 +58,7 @@ const Patientschema = new schema({
 
 })
 
+
 const profileschema= new schema({
     img:String,
     userId :String,
@@ -67,7 +68,8 @@ const profileschema= new schema({
     about:{ type: String },
     title:{ type: String },
     workdays:{type:Array},
-    startTime:String, endTime:String, step:String
+    startTime:String, endTime:String, step:String,
+    rate:String
 })
 const weeklyScheduleSchema = new mongoose.Schema({
     userId :String,

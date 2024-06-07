@@ -2,6 +2,50 @@
 const bodyParser= require('body-parser')
 
 require('dotenv').config()
+async function checkNumber(number,res) {
+  try {
+    if(!number) return res.send("no phone included")
+    console.log(number)
+    const whatsappId = `+20${number.replace(/^0+/, '')}@c.us`
+    console.log( whatsappId)
+      const isRegistered = await client.isRegisteredUser(whatsappId);
+      console.log(isRegistered ? 'Number is on WhatsApp' : 'Number is not on WhatsApp');
+      return isRegistered
+  } catch (error) {
+      console.error('Error checking number:', error);
+  }
+}
+
+const { Client,LocalAuth } = require('whatsapp-web.js');
+
+const client = new Client({
+  session: null, // Set session to null when using noAuth
+    noAuth: true
+  // proxyAuthentication: { username: 'username', password: 'password' },
+});
+
+
+client.on('qr', qr => {
+  qrcode.generate(qr, { small: true });
+  console.log('QR Code received, scan please!');
+});
+
+client.on('ready', () => {
+  console.log('Client is ready!');
+});
+
+client.on('authenticated', () => {
+  console.log('Authenticated');
+});
+
+client.on('auth_failure', msg => {
+  console.error('Authentication failure', msg);
+});
+
+client.on('disconnected', reason => {
+  console.log('Client was logged out', reason);
+});
+client.initialize();
 const fileUpload = require('express-fileupload');
 
 //const schedule = require('node-schedule');
@@ -43,6 +87,7 @@ const login = require('./config/login-config')
 const passport = require('passport')
 const session = require('express-session');
 const {verifiy} = require('./verification');
+const { accessSync } = require('fs');
 const transport =nodemailer.createTransport({
   service:'gmail',
   auth:{

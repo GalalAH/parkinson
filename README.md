@@ -250,7 +250,8 @@ res:{
 
        post /reserve
         req:{
-            name:string,
+            doctorName:string
+            patientName:string,
             doctorIdstring,
             dayOfWeek:string,
             patientId:string
@@ -258,6 +259,7 @@ res:{
             dayOfMonth:string,
             month:string,
             Year:string
+            link:String
         }
         res:{
         message:string
@@ -305,8 +307,11 @@ res:{
         }
         post /avalible-apoinmments
         req:{
-        //doctorId
-        userId:string
+            
+            dayOfMonth
+            month:string
+            userId:string//the patient id
+            year:string
                 }
         res:{
                 userId :String,
@@ -328,13 +333,8 @@ res:{
 
       post   /cancel-apoinmment
       req:{
-
-        userId:string
-        ,dayOfMonth:string,
-        month:string,
-        year:string,
-        TimeOfDay:string,
-        doctorId:string
+       reservationId:string
+       ,apoinmmentId:string
       }
       res:{
         message :string
@@ -361,9 +361,28 @@ res:{
     }
 
     post /new-profileImage
-    req:{image:file
+    req:{
     
-        
-    
+
+        image:file
+
         }
+
+      res:{
+
+         message :string
+         link:string
+         status:int
+
+      }  
+      post /rate
+      req:{
+        userId:string,
+        rating:string
+            }
+            res:{
+                message:string
+                Rate:string
+                status:int
+            }   
 
