@@ -79,7 +79,7 @@ const UserPatient = new mongoose.Schema({
 
 
 const rate= mongoose.model("rate",rateschema)
-const patientUser = mongoose.model("patientUser",User)
+const patientUser = mongoose.model("patientUser",UserPatient)
 
 const patientVerification = mongoose.model("patientVerification",patientVerificationschema )
 const reservation = mongoose.model("reserved",reservedApoinmentschema )
