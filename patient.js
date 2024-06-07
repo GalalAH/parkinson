@@ -432,9 +432,9 @@ router.post("/cancel-apoinmment",(req,res)=>{
       return res.json({message:"internal err",status:404})})
                     })
       router.post("/new-profileImage",(req,res)=>{
-        let {_id} = req.body
+        let {userId} = req.body
           if(req.files){
-            authorize().then(async result =>{const link = await patientuploadfile(result,req.files.image,_id)
+            authorize().then(async result =>{const link = await patientuploadfile(result,req.files.image,userId)
             
               return res.json({message:"img uploaded successfully",link:link,status:200})
             })
