@@ -31,7 +31,9 @@ async function uploadfile(authclient,img,id){
    
 const drive = google.drive({version:"v3",auth:authclient})
 const filemetadata = {
+
    name:img.name,
+
    parents:["1XXA8L-vQ8llrkkmGdDuFgCgcKrZ_pptM"]
   }
   console.log(img.data)
@@ -46,9 +48,11 @@ const filemetadata = {
   
 
 console.log("response",response.data.webViewLink)
+
 const link = await response.data.webViewLink
 const download =convertDriveLink(link)
 profile.findByIdAndUpdate(id,{img:download})
+
 
 .catch((err)=>{console.log(err)})
 

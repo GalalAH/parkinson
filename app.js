@@ -1,7 +1,20 @@
+
 const bodyParser= require('body-parser')
+
 require('dotenv').config()
 const fileUpload = require('express-fileupload');
+
 //const schedule = require('node-schedule');
+
+
+require('dotenv').config()
+
+function convertDriveLink(originalLink) {
+  const start = originalLink.indexOf('/d/') + 3;
+  const end = originalLink.indexOf('/view');
+  const fileId = originalLink.substring(start, end);
+  
+  return `https://drive.google.com/uc?id=${fileId}&export=download`;}
 const {generateWeeklySchedules,AutdSchedule}=require("./apoinmment")
 const multer = require('multer');
 const storage = multer.memoryStorage();
@@ -12,14 +25,17 @@ const flash =require('express-flash')
 const express = require('express')
 const morgan =require("morgan")
 const {profile,user,UserVerification,patient,Schedule} =require("./schems")
+
 const {reservation,patientUser}=require("./patientschema")
+
 const patientRoute = require('./patient')
+
 const app = express()   
 
 const bycrypt =require("bcrypt")
 const mongoose = require("mongoose")
 const dbURI= process.env.DB_URI
-mongoose.connect(dbURI)
+mongoose.connect(dbURI,{ useNewUrlParser: true, useUnifiedTopology: true })
 .then(app.listen(process.env.PORT||5050,()=>{
   console.log('server is running ')
 }))
@@ -56,6 +72,18 @@ html:`<p>verify your eamil address to complete the singup and login into your ac
 }
 
 
+
+//const schedule = require('node-schedule');
+
+
+
+// Define a schedule to run at midnight (beginning of a new day)
+// const midnightTask = schedule.scheduleJob('0 0 * * *', () => {
+//   AutdSchedule()
+// });
+
+
+
 const newVerification = new UserVerification({
 userId:_id,
 verificationCode:hashedverificationCode,
@@ -65,7 +93,7 @@ expiresAT:Date.now()+ 21600000
 newVerification.save()
 .then((result)=>{
   console.log(result)
-  transport.jsonMail(mailOptions)
+  transport.sendMail(mailOptions)
   .then(()=>{
 
 console.log("pending")
@@ -138,31 +166,36 @@ status: 200
     res.json({message : "somthing went wrong please try again later",status:404})
   }
 })
+
    
    app.post('/login', (req, res,next) => {
     try{
+
+
+
+
     let { password, email } = req.body;
     user.findOne({ Email: email })
       .then((data) => {
         if (!data) {
-          return res.status(404).json({ message: "wrong email", status: 404 });
+          return res.status(404).json({ message: "wrong email",Profilecheck: false, status: 404 });
         }
         if (!data.verified) {
-          return res.status(404).json({ message: "User isn't verified", status: 404 });
+          return res.status(404).json({ message: "User isn't verified",Profilecheck: false, status: 404 });
         }
         // Call passport.authenticate() to authenticate the user
         passport.authenticate('local', (err, user, info) => {
           if (err) {
-            return res.status(500).json({ message: 'Internal Server Error', status: 404 });
+            return res.status(500).json({ message: 'Internal Server Error',Profilecheck: false, status: 404 });
           }
           if (!user) {
             // Authentication failed
-            return res.status(401).json({ message: 'Authentication failed : wrong password', status: 404 });
+            return res.status(401).json({ message: 'Authentication failed : wrong password',Profilecheck: false, status: 404 });
           }
           // Authentication successful, set req.user and continue
           req.logIn(user, (err) => {
             if (err) {
-              return  res.status(401).json({ message: 'Authentication failed', status: 404 });
+              return  res.status(401).json({ message: 'Authentication failed',Profilecheck: false, status: 404 });
             }
             const id = user._id;
             profile.exists({ userId: id })
@@ -176,18 +209,20 @@ status: 200
               })
               .catch((err) => {
                 console.log(err);
-                return res.status(500).json({ message: 'Internal Server Error', status: 404 });
+                return res.status(500).json({ message: 'Internal Server Error',Profilecheck: false, status: 404 });
               });
           });
         })(req, res, next);
       })
       .catch((err) => {
         console.log(err);
-        return res.status(500).json({ message: 'Internal Server Error', status: 500 });
+        return res.status(500).json({ message: 'Internal Server Error',Profilecheck: false, status: 500 });
       });
+
   }catch(err){console.log(err)
   res.send("err")}});
   
+
 // app.get("/verify",passport.authenticate('local',{
 //  successRedirect:'/logins',
 //  failureRedirect:'/loginfailed',
@@ -219,7 +254,7 @@ app.post('/forget-password', async (req, res) => {
             subject: 'Password Reset Verification Code',
             text: `Your verification code is: ${verificationCode}. This code is valid for 10 minutes.`
         };
-        transport.jsonMail(mailOptions, (err) => {
+        transport.sendMail(mailOptions, (err) => {
             if (err) {
                 console.log(err);
                 return res.json({ error: 'Error sending verification email.', status:404 });
@@ -279,12 +314,12 @@ app.post('/reset-password', async (req, res) => {
     }
 });
 //email verify api
-
-
-app.post('/emailverification',(req,res)=>{
+app.post('/emailverification',async(req,res)=>{
   let {email,code}=req.body
-  user.findOne({Email:email})
+ await user.findOne({Email:email})
+
   .then(result=>{
+    console.log(result)
     const _id=result._id
     verifiy(_id,code,res)
     }).catch(err=>{conole.log(err)
@@ -294,9 +329,6 @@ app.post('/emailverification',(req,res)=>{
   })
 //doctor dashborad
 
-
-
-//doctor dashborad
 
 app.post("/PatientList",async(req,res)=>{
   try{
@@ -319,7 +351,7 @@ Name:name,
 gender:gender,
 age:age,
 address:address,
-score:"not measured"
+score:"0"
 })
 Patient.save()
 .then((result)=>{console.log(result)
@@ -333,7 +365,7 @@ Patient.save()
 
 app.post("/deletePateint",async(req,res)=>{
   try{
-  
+
  const patient_id = req.body.id
 patient.deleteOne({_id:patient_id}).then(res.json({message:"deleted successfully",status:200}))
 .catch((err)=>{console.log("err in deleteing the patient :"+ err)
@@ -344,10 +376,8 @@ res.json({message:"something went wrong try again later",status:404})
 
 app.post("/editPateint",async(req,res)=>{
   let{name,phone,gender,age,address,id}=req.body 
-
-
-  patient.findOneAndUpdate({_id,id},{
-    userId:id,
+console.log(" id : ",id)
+  patient.findOneAndUpdate({_id:id},{
     phone:phone,
     Name:name,
     gender:gender,
@@ -417,27 +447,30 @@ patient.deleteMany({userId:id}).then(res.json("all deleted"))
 
 
 app.post('/profile',async (req,res)=>{  
-  
+
   try{
     if (!req.files ) {
       console.log(req.files)
       return res.status(400).json({ message: 'No files were uploaded' });
   }
   console.log(req.files)
+
   const File = req.files.image;
   
-  if(req.query.userId){
+  if(req.body.userId){
   console.log("session started")
   }else{console.log("login first")
    return res.json("login first")}
    const id =req.query.userId
-   
+
     //console.log(req.file)
+
     let {name,address,phone, startTime, endTime,about, step,workdays,title}=req.query
     const Profile = new profile({
       title:title,
       about:about,
       userId:id,
+
       Name:name, 
       address:address,
       phone:phone,
@@ -456,7 +489,7 @@ app.post('/profile',async (req,res)=>{
      console.log("img link",link)
      const now = new Date();
      const currentDayOfWeek = now.getDay();
-     const weeklySchedules = await generateWeeklySchedules(id,currentDayOfWeek, startTime, endTime, step,workdays );
+     const weeklySchedules = await generateWeeklySchedules(userId,currentDayOfWeek, startTime, endTime, step,workdays );
  // Save the generated weekly schedules to MongoDB
  Schedule.insertMany(weeklySchedules)
    .then(async () => {
@@ -473,10 +506,12 @@ app.post('/profile',async (req,res)=>{
     .catch( error=>{ console.log('Error uploading file to Google Drive:', error);
       return res.json({message:'Internal Server Error',status:404})})
 
+
     }catch(err){console.log(err)
       res.json({message:'Internal Server Error',status:404})
     }
     
+
 })
 
 // app.post('/test',(req,res)=>{
@@ -493,8 +528,8 @@ app.post('/profile',async (req,res)=>{
 
 app.post("/edit-profile",async(req,res)=>{
   let {name,address,phone, startTime, endTime, step,workdays,userId}=req.body 
-  
-  
+
+  console.log(userId)
    await profile.findOneAndUpdate({userId:userId},{
     phone: phone,
     Name: name,
@@ -527,8 +562,10 @@ app.post("/edit-profile",async(req,res)=>{
       res.json({message:"profile edited successfully",status:200})})
     .catch((err)=>{console.log("err in editing the patient :"+ err)
     return res.json({message:"something went wrong try again later",status:404})
+
                     })
               })
+
   app.post("/logout",(req,res)=>{
     try{
         req.logOut(()=>{return res.json({message:"loged out successfully",status:200})})
@@ -539,6 +576,7 @@ app.post("/edit-profile",async(req,res)=>{
         }
     })
 
+
     
     app.post("/new-profileImage",(req,res)=>{
     let {_id} = req.body
@@ -548,31 +586,38 @@ app.post("/edit-profile",async(req,res)=>{
          return res.json({message:"img uploaded successfully",link:link,status:200})
         })
   
-        }
-      res.json({message:"img was not uploaded ",status:404})
+        }else{
+     return res.json( {message:"img was not uploaded ",status:404})}
     })
 
 app.post("/apoinmments",(req,res)=>{
   
 let {userId} =req.body
 console.log(userId)
+
 reservation.find({doctorId:userId}).then(async result=>{
     
     if(result){res.json({result,link:result.img,status:200})}
+
     else{res.json({message:"wrong id",status:404})}
+
 })
 .catch(err=>{console.log("err viewing apoinment : ",err)
-  res.json({message:"internal error",status:404})})
+ return res.json({message:"internal error",status:404})})
 })
 
 
 app.post('/score',(req,res)=>{
 let{userId,score}=req.body
-patient.updateOne({userId:userId},{score:score}).
-then(result=>{res.json({message:"score updated successfully",status:200})})
+  console.log(score)
+  console.log(userId)
+patient.updateOne({_id:userId},{score: score}).
+then(result=>{if(!result){return res.json({message:"score update failed",status:404})}
+  res.json({message:"score updated successfully",status:200})})
 .catch(err=>{console.log(err)
   res.json({message:"score update failed",status:404})})
 })
+
 
 
 app.post("/find-apoinmment",async(req,res)=>{
@@ -616,6 +661,7 @@ patient.deleteMany({userId:id}).then(res.json("all deleted"))
 
 })
 
+
 app.post("/cancel-apoinmment",(req,res)=>{
   let {userId,dayOfMonth,month,year,TimeOfDay,doctorId} =req.body
   console.log(userId)
@@ -642,3 +688,4 @@ app.post("/cancel-apoinmment",(req,res)=>{
   return res.json({message:"internal err",status:404})
     })
   })
+
