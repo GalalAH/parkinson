@@ -15,7 +15,7 @@ const session = require('express-session');
 router.use(passport.initialize())
 
 router.use(passport.initialize())
-router.use(passport.session())
+router.use(passport.session())  
 
 
 function convertDriveLink(originalLink) {
@@ -50,7 +50,6 @@ html:`<p>verify your eamil address to complete the singup and login into your ac
  ${Code} <b> expires in 6 hours</b>.</p>`
 
 }
-
 
 const newVerification = new patientVerification({
 userId:_id,
@@ -326,9 +325,9 @@ router.post('/emailverification',(req,res)=>{
 
       router.post("/avalible-apoinmments",(req,res)=>{
   
-        let {userId} =req.body
+        let {userId,month,Year,dayOfMonth} =req.body
         console.log(userId)
-        Schedule.find({userId:userId,"timeSlots": { $elemMatch: { available: true } }})
+        Schedule.find({userId:userId,dayOfMonth,Year,month,"timeSlots": { $elemMatch: { available: true } }})
         .then(result=>{if(result){res.json({result,status:200})}
         else{res.json({message:"wrong id",status:404})}
         })
@@ -380,11 +379,74 @@ console.log(link)
 res.send({link:newlink})
 })
 
+router.get('/fix',(req,res)=>{
+profile.find().then(async result=>{
+for(let doc of result){
+let link =convertDriveLink(doc.img)
+doc.img=link
+await doc.save()
+console.log(doc)
+}
+console.log(result)
+res.send("done converting")
+})
 
 
 
+})
+router.post("/cancel-apoinmment",(req,res)=>{
+  let {userId,dayOfMonth,month,year,TimeOfDay,doctorId} =req.body
+  console.log(userId)
+  reservation.updateOne({patientId:userId,dayOfMonth,month,year,TimeOfDay},{status:"canceled"}).then(async result=>{
+    if(result){
+    Schedule.findOneAndUpdate( { 
+      userId:doctorId,
+      month:month,
+      Year:year,
+      dayOfMonth:dayOfMonth
+  },
+  { 
+    $set: { 'timeSlots.$[slot].available': true } 
+  },
+  {
+    arrayFilters: [{ 'slot.time': TimeOfDay}]
+  }).then((result)=>{console.log(result)
+    return res.json({message:" the appinment got canceled",status:200})
+
+})}else{return res.json({message:"didn't find the appinment",status:404})}
+ 
+  })
+  .catch(err=>{console.log("err canclleing apoinment : ",err)
+  return res.json({message:"internal err",status:404})
+    })
+  })
 
 
+  router.post("/edit-profile",async(req,res)=>{
+    let { gender, phone,name, email ,userId}=req.body 
+    
+     await patientUser.findOneAndUpdate({_id:userId},{
+      gender:gender,
+      phone:phone,
+      username:name,
+      Email:email 
+      })
+      .then(result=>{console.log(result)
+        return res.json({message:"edited successfully"})
+      }).catch(err=>{console.log(err)
+      return res.json({message:"internal err",status:404})})
+                    })
+      router.post("/new-profileImage",(req,res)=>{
+        let {userId} = req.body
+          if(req.files){
+            authorize().then(async result =>{const link = await patientuploadfile(result,req.files.image,userId)
+            
+              return res.json({message:"img uploaded successfully",link:link,status:200})
+            })
+      
+            }
+          res.json({message:"img was not uploaded ",status:404})
+        })
 
 
   module.exports = router

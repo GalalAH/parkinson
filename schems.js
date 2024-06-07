@@ -64,6 +64,8 @@ const profileschema= new schema({
     phone: { type: String},
     Name: { type: String, required: true },
     address: { type: String },
+    about:{ type: String },
+    title:{ type: String },
     workdays:{type:Array},
     startTime:String, endTime:String, step:String
 })

@@ -20,6 +20,7 @@ expiresAT:Date
   month:{type:String,required:true},
   Year:{type:String,required:true},
   name:{type:String,required:true},
+  status:{type:String},
   img:String
 });
   

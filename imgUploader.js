@@ -9,6 +9,7 @@ function convertDriveLink(originalLink) {
   const fileId = originalLink.substring(start, end);
   
   return `https://drive.google.com/uc?id=${fileId}&export=download`;}
+
 // Inside your endpoint after receiving the file
 
 const {profile}=require("./schems")
@@ -47,9 +48,11 @@ const filemetadata = {
   
 
 console.log("response",response.data.webViewLink)
-const link = await convertDriveLink(await response.data.webViewLink)  
-  
-profile.findByIdAndUpdate(id,{img:link})
+
+const link = await response.data.webViewLink
+const download =convertDriveLink(link)
+profile.findByIdAndUpdate(id,{img:download})
+
 
 .catch((err)=>{console.log(err)})
 
@@ -83,7 +86,8 @@ const filemetadata = {
 
 console.log("response",response.data.webViewLink)
 const link = await response.data.webViewLink
-patientUser.findByIdAndUpdate(id,{img:link})
+const download =convertDriveLink(link)
+patientUser.findByIdAndUpdate(id,{img:download})
 
 .catch((err)=>{console.log(err)})
 

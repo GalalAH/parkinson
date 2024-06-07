@@ -216,7 +216,7 @@ res:        {
         
        }
        res:{
-        result:{
+        reserve:{
             doctorId :String,
             patientId:String,
             dayOfWeek:String,
@@ -224,6 +224,8 @@ res:        {
             TimeOfDay:String,
             month:String,
             Year:String
+            img:String
+            name:string
                 }
         status: int
        }
@@ -241,3 +243,127 @@ res:{
         link:string
         status:int
         }
+
+
+
+
+
+       post /reserve
+        req:{
+            name:string,
+            doctorIdstring,
+            dayOfWeek:string,
+            patientId:string
+            ,TimeOfDay:string,
+            dayOfMonth:string,
+            month:string,
+            Year:string
+        }
+        res:{
+        message:string
+        status:int
+        }
+
+
+
+     post   /doctors-list
+
+     req: nothing
+
+
+        res:{
+            data:[
+                img:String,
+                userId :String,
+                phone:  String,
+                Name:  String,,
+                address: String }
+                workdays:{type:Array},
+                startTime:String
+                endTime:String,
+                step:String
+                ]
+                ,status:int
+        }
+
+    post /apoinmments
+    req:{
+        //patientId
+        userId:string
+    }
+    res:{
+        result={
+                doctorId :String,
+                patientId:String,,
+                dayOfWeek:String,,
+                dayOfMonth:String,,
+                TimeOfDay:String,,
+                month:String,,
+                Year:String
+        },
+        status:int
+        }
+        post /avalible-apoinmments
+        req:{
+        //doctorId
+        userId:string
+                }
+        res:{
+                userId :String,
+                dayOfWeek: String,
+                dayOfMonth: String,
+                month:String,
+                Year:String,
+                timeSlots: [
+                {
+                    time: String,
+                    available: Boolean// you don't have to access it
+                }
+                ],
+                available: Boolean // you don't have to access it
+            }
+
+
+
+
+      post   /cancel-apoinmment
+      req:{
+
+        userId:string
+        ,dayOfMonth:string,
+        month:string,
+        year:string,
+        TimeOfDay:string,
+        doctorId:string
+      }
+      res:{
+        message :string
+        status:int
+
+            }
+
+    post/edit-profile
+    req:{
+
+        gender:string,
+         phone:string,
+         name:string,
+          email:string ,
+          userId:string
+    }        
+    res:{
+
+        message :string
+        status:int
+
+
+
+    }
+
+    post /new-profileImage
+    req:{image:file
+    
+        
+    
+        }
+
