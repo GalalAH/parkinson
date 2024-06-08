@@ -330,7 +330,7 @@ router.post('/emailverification',(req,res)=>{
         let {userId,month,Year,dayOfMonth} =req.body
         console.log(userId)
         Schedule.find({userId:userId,dayOfMonth,Year,month,"timeSlots": { $elemMatch: { available: true } }})
-        .then(result=>{if(result){res.json({result,status:200})}
+        .then(result=>{if(result){res.json({result.timeSlots,status:200})}
         else{res.json({message:"wrong id",status:404})}
         })
         .catch(err=>{console.log("err viewing apoinment : ",err)
