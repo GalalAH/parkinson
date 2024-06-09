@@ -331,7 +331,7 @@ router.post('/emailverification',(req,res)=>{
         console.log(userId)
         Schedule.findOne({userId:userId,dayOfMonth,Year,month,"timeSlots": { $elemMatch: { available: true } }})
         .then(result=>{if(result){
-       const slots=result.timeSlots
+       const slots= result.timeSlots.filter(slot => slot.available)
         res.json({message:"here the avalible appoinments ", slots,status:200})}
         else{res.json({message:"wrong id",status:404})}
         })
