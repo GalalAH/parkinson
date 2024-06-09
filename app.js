@@ -543,7 +543,7 @@ app.post('/profile',async (req,res)=>{
    .catch((err) => {
      console.error('Failed to save weekly schedules', err)
    });
-   res.json({message:"your profile is done",img:link,_id:Profile._id,status:200})
+   return res.json({message:"your profile is done",img:link,_id:Profile._id,status:200})
 
 
      })
