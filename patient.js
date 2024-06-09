@@ -401,7 +401,7 @@ res.send("done converting")
 router.post("/cancel-apoinmment",(req,res)=>{
   let {reservationId,apoinmmentId} =req.body
   console.log(reservationId)
-  reservation.updateOne({_id:reservationId},{status:"canceled"}).then(async result=>{
+  reservation.updateOne({_id:reservationId},{appointmentStatus:"canceled"}).then(async result=>{
     if(result){
     Schedule.findOneAndUpdate( { 
     _id:apoinmmentId
