@@ -329,10 +329,10 @@ router.post('/emailverification',(req,res)=>{
   
         let {userId,month,Year,dayOfMonth} =req.body
         console.log(userId)
-        Schedule.find({userId:userId,dayOfMonth,Year,month,"timeSlots": { $elemMatch: { available: true } }})
-        .then(result=>{if(result)
-       const  slots=result.timeSlots
-        {res.json({message:"here the avalible appoinments ", slots,status:200})}
+        Schedule.findOne({userId:userId,dayOfMonth,Year,month,"timeSlots": { $elemMatch: { available: true } }})
+        .then(result=>{if(result){
+       const slots=result.timeSlots
+        res.json({message:"here the avalible appoinments ", slots,status:200})}
         else{res.json({message:"wrong id",status:404})}
         })
         .catch(err=>{console.log("err viewing apoinment : ",err)
