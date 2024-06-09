@@ -1,4 +1,4 @@
-
+ 
 const bodyParser= require('body-parser')
 
 require('dotenv').config()
@@ -543,7 +543,8 @@ app.post('/profile',async (req,res)=>{
    .catch((err) => {
      console.error('Failed to save weekly schedules', err)
    });
-   return res.json({message:"your profile is done",img:link,_id:Profile._id,status:200})
+    const downloadlink=convertDriveLink(link)
+   return res.json({message:"your profile is done",img:downloadlink,_id:Profile._id,status:200})
 
 
      })
