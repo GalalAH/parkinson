@@ -22,7 +22,9 @@ expiresAT:Date
   doctorName:{type:String,required:true},
   patientName:{type:String,required:true},
   appointmentStatus:{type:String,default:"ongoing"},
-  apoinmmentId:String,
+
+  appointmentId:String,
+
   img:String,
   doctorimg:String
 });
