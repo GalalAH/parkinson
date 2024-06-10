@@ -710,7 +710,7 @@ patient.deleteMany({userId:id}).then(res.json("all deleted"))
 
 
 app.post("/cancel-apoinmment",(req,res)=>{
-  let {reservationId,apoinmmentId} =req.body
+  let {reservationId,apoinmmentId,TimeOfDay} =req.body
   console.log(userId)
   reservation.updateOne({_id:reservationId},{status:"canceled"}).then(async result=>{
     if(result){
