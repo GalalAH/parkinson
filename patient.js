@@ -333,8 +333,10 @@ router.post('/emailverification',(req,res)=>{
         Schedule.findOne({userId:userId,dayOfMonth,Year,month,"timeSlots": { $elemMatch: { available: true } }})
 
         .then(result=>{
-          const slots= result.timeSlots.filter(slot => slot.available)
-          if(result){res.json({message:"here the avalible appoinments",slots,apoinmmentId:result._id,status:200})}
+         
+          if(result){
+             const slots= result.timeSlots.filter(slot => slot.available)
+            res.json({message:"here the avalible appoinments",slots,apoinmmentId:result._id,status:200})}
 
         else{res.json({message:"wrong id",status:404})}
         })
