@@ -21,15 +21,12 @@ expiresAT:Date
   Year:{type:String,required:true},
   doctorName:{type:String,required:true},
   patientName:{type:String,required:true},
-  status:{type:String},
+  appointmentStatus:{type:String},
   apoinmmentId:String,
   img:String,
   doctorimg:String
 });
   
-
-
-
 
 
 //  user shema
@@ -75,8 +72,6 @@ const UserPatient = new mongoose.Schema({
     totalrate:{type:Number,
       default: 0}
     })
-
-//pateints schema
 
 
 const rate= mongoose.model("rate",rateschema)
