@@ -659,16 +659,13 @@ patient.deleteMany({userId:id}).then(res.json("all deleted"))
 
 })
 
-app.post("/cancel-apoinmment",(req,res)=>{
-  let {userId,dayOfMonth,month,year,TimeOfDay,doctorId} =req.body
-  console.log(userId)
-  reservation.updateOne({doctorId:userId,dayOfMonth,month,year,TimeOfDay},{status:"canceled"}).then(async result=>{
+app.post("/cancel-apoinmment",(req,res)=>{ 
+  let {reservationId, appointmentId,TimeOfDay} =req.body
+  console.log(reservationId)
+  reservation.updateOne({_id:reservationId},{appointmentStatus:"canceled"}).then(async result=>{
     if(result){
     Schedule.findOneAndUpdate( { 
-      userId:doctorId,
-      month:month,
-      Year:year,
-      dayOfMonth:dayOfMonth
+    _id: appointmentId
   },
   { 
     $set: { 'timeSlots.$[slot].available': true } 

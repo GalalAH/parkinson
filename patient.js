@@ -3,6 +3,7 @@ const router = express.Router()
 const {patientverifiy} = require('./verification');
 require('dotenv').config()
 //const schedule = require('node-schedule');
+const {apoinmentTimer}= require("./time_mangment")
 const {authorize,patientuploadfile}=require('./imgUploader')
 const nodemailer = require('nodemailer')
 const {patientUser,patientVerification,reservation,rate} =require("./patientschema")
@@ -260,7 +261,7 @@ router.post('/emailverification',(req,res)=>{
   })
   router.post('/reserve',(req,res)=>{
 
-    let {apoinmmentId,doctorlink,patientName,doctorName,doctorId,dayOfWeek,patientId,TimeOfDay,dayOfMonth,month,Year,link}=req.body
+    let { appointmentId,doctorlink,patientName,doctorName,doctorId,dayOfWeek,patientId,TimeOfDay,dayOfMonth,month,Year,link}=req.body
     
     console.log(doctorId)
     const Reservation= new reservation({
@@ -275,7 +276,7 @@ router.post('/emailverification',(req,res)=>{
     Year:Year,
     img:link,
     doctorimg:doctorlink,
-    apoinmmentId:apoinmmentId
+    appointmentId:appointmentId
     })
     Reservation.save().then(result=>{
       console.log(dayOfMonth)
@@ -328,7 +329,7 @@ router.post('/emailverification',(req,res)=>{
         Schedule.findOne({userId:userId,dayOfMonth,Year,month,"timeSlots": { $elemMatch: { available: true } }})
         .then(result=>{
           const slots= result.timeSlots.filter(slot => slot.available)
-          if(result){res.json({slots,apoinmmentId:result._id,status:200})}
+          if(result){res.json({slots,appointmentId:result._id,status:200})}
         else{res.json({message:"wrong id",status:404})}
         })
         .catch(err=>{console.log("err viewing apoinment : ",err)
@@ -370,13 +371,13 @@ router.post('/emailverification',(req,res)=>{
         })
       
 
-router.post("/cancel-apoinmment",(req,res)=>{
-  let {reservationId,apoinmmentId} =req.body
+router.post("/cancel-apoinmment",(req,res)=>{ 
+  let {reservationId, appointmentId,TimeOfDay} =req.body
   console.log(reservationId)
   reservation.updateOne({_id:reservationId},{appointmentStatus:"canceled"}).then(async result=>{
     if(result){
     Schedule.findOneAndUpdate( { 
-    _id:apoinmmentId
+    _id: appointmentId
   },
   { 
     $set: { 'timeSlots.$[slot].available': true } 
@@ -455,7 +456,12 @@ router.post("/cancel-apoinmment",(req,res)=>{
  })
  })
 
+ router.post("/test",(req,res)=>{
+  let {time,dayOfMonth,month,id} =req.body
+  apoinmentTimer(time,month,dayOfMonth,id)
 
+  res.send("hi")
+ })
 
   module.exports = router
 
