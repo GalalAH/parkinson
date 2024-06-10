@@ -378,7 +378,7 @@ router.post('/emailverification',(req,res)=>{
       
 
 router.post("/cancel-apoinmment",(req,res)=>{
-  let {reservationId,apoinmmentId} =req.body
+  let {reservationId,apoinmmentId,TimeOfDay} =req.body
   console.log(reservationId)
   reservation.updateOne({_id:reservationId},{appointmentStatus:"canceled"}).then(async result=>{
     if(result){
