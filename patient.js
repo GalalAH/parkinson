@@ -334,7 +334,7 @@ router.post('/emailverification',(req,res)=>{
 
         .then(result=>{
           const slots= result.timeSlots.filter(slot => slot.available)
-          if(result){res.json({slots,apoinmmentId:result._id,status:200})}
+          if(result){res.json({message:"here the avalible appoinments",slots,apoinmmentId:result._id,status:200})}
 
         else{res.json({message:"wrong id",status:404})}
         })
