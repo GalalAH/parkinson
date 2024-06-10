@@ -14,8 +14,10 @@ const passport = require('passport');
 const { appendFile } = require('fs');
 const session = require('express-session');
 router.use(passport.initialize())
+
 router.use(passport.initialize())
 router.use(passport.session())  
+
 
 function convertDriveLink(originalLink) {
   const start = originalLink.indexOf('/d/') + 3;
@@ -89,7 +91,8 @@ async email => {
 
 router.post('/signup',async (req,res)=>{
   
-  let {password,email,name,phone,gender} = req.query  
+  let {password,email,name,phone,gender} = req.query
+  
   try{
     if(!req.files){return res.json({message:"no image was uploaded",status:404})}
     const emailcheck =await patientUser.exists({Email:email})
@@ -97,7 +100,7 @@ router.post('/signup',async (req,res)=>{
     if(emailcheck){
       return res.json({message : "this email is already used",status:404})
   }
-   
+   console.log(password)
  const hashedpass = await bycrypt.hash(password,10)
  const User = new patientUser({  
   gender:gender,
@@ -108,14 +111,16 @@ router.post('/signup',async (req,res)=>{
   verified:false,
   img:""
 })
-
+console.log("frist user",User)
 
 User.save()
 .then((result)=>{
+  console.log("result :",result)
   sendverificationemail(result,res)
   authorize().then(async result =>{const link = await patientuploadfile(result,req.files.image,User._id)
    User.img=link
    User.save() 
+  console.log("secand user",User)                            
   return res.json({message:"img uploaded successfully",link:link,status:200})
   })
 
@@ -263,7 +268,7 @@ router.post('/emailverification',(req,res)=>{
 
     let { appointmentId,doctorlink,patientName,doctorName,doctorId,dayOfWeek,patientId,TimeOfDay,dayOfMonth,month,Year,link}=req.body
     
-    console.log(doctorId)
+    console.log("appoiment id",apoinmmentId)
     const Reservation= new reservation({
     doctorName:doctorName,
     patientName:patientName,
@@ -327,9 +332,12 @@ router.post('/emailverification',(req,res)=>{
         let {userId,month,Year,dayOfMonth} =req.body
         console.log(userId)
         Schedule.findOne({userId:userId,dayOfMonth,Year,month,"timeSlots": { $elemMatch: { available: true } }})
+
         .then(result=>{
           const slots= result.timeSlots.filter(slot => slot.available)
-          if(result){res.json({slots,appointmentId:result._id,status:200})}
+
+          if(result){res.json({message:"here the avalible appoinments",slots,appointmentId:result._id,status:200})}
+
         else{res.json({message:"wrong id",status:404})}
         })
         .catch(err=>{console.log("err viewing apoinment : ",err)
@@ -371,8 +379,11 @@ router.post('/emailverification',(req,res)=>{
         })
       
 
+
 router.post("/cancel-apoinmment",(req,res)=>{ 
   let {reservationId, appointmentId,TimeOfDay} =req.body
+
+
   console.log(reservationId)
   reservation.updateOne({_id:reservationId},{appointmentStatus:"canceled"}).then(async result=>{
     if(result){
@@ -400,7 +411,7 @@ router.post("/cancel-apoinmment",(req,res)=>{
     let { gender, phone,name, email ,userId}=req.body 
     
      await patientUser.findOneAndUpdate({_id:userId},{
-    
+
       phone:phone,
       username:name,
       Email:email 
@@ -413,13 +424,15 @@ router.post("/cancel-apoinmment",(req,res)=>{
       router.post("/new-profileImage",(req,res)=>{
         let {userId} = req.body
           if(req.files){
-            authorize().then(async result =>{const link = await patientuploadfile(result,req.files.image,userId)
-            
+            authorize().then(async result =>{const viewlink = await patientuploadfile(result,req.files.image,userId)
+             const link= convertDriveLink(viewlink)
               return res.json({message:"img uploaded successfully",link:link,status:200})
             })
       
+
             }else{ res.json({message:"img was not uploaded ",status:404})}
          
+
         })
 
  router.post("/rate",async(req,res)=>{
@@ -466,5 +479,3 @@ router.post("/cancel-apoinmment",(req,res)=>{
   module.exports = router
 
 
-
-  
