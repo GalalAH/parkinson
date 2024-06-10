@@ -381,7 +381,9 @@ router.post('/emailverification',(req,res)=>{
 
 router.post("/cancel-apoinmment",(req,res)=>{
   let {reservationId,appointmentId,TimeOfDay} =req.body
-  console.log(reservationId)
+  console.log("appointmentId : ",appointmentId)
+  console.log("reservationId : ",reservationId)
+    console.log(",TimeOfDay : ",,TimeOfDay)
   reservation.updateOne({_id:reservationId},{appointmentStatus:"canceled"}).then(async result=>{
     if(result){
     Schedule.findOneAndUpdate( { 
