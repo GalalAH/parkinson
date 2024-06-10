@@ -579,7 +579,7 @@ app.post("/edit-profile",async(req,res)=>{
     phone: phone,
     Name: name,
     title:title,
-    about:about
+    about:about,
     address: address,
     workdays:workdays,
     startTime:startTime,
