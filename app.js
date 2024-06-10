@@ -572,12 +572,14 @@ app.post('/profile',async (req,res)=>{
 
 
 app.post("/edit-profile",async(req,res)=>{
-  let {name,address,phone, startTime, endTime, step,workdays,userId}=req.body 
+  let {title,about,name,address,phone, startTime, endTime, step,workdays,userId}=req.body 
 
   console.log(userId)
    await profile.findOneAndUpdate({userId:userId},{
     phone: phone,
     Name: name,
+    title:title,
+    about:about
     address: address,
     workdays:workdays,
     startTime:startTime,
