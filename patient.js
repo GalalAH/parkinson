@@ -260,7 +260,7 @@ router.post('/emailverification',(req,res)=>{
   })
   router.post('/reserve',(req,res)=>{
 
-    let {doctorlink,patientName,doctorName,doctorId,dayOfWeek,patientId,TimeOfDay,dayOfMonth,month,Year,link}=req.body
+    let {apoinmmentId,doctorlink,patientName,doctorName,doctorId,dayOfWeek,patientId,TimeOfDay,dayOfMonth,month,Year,link}=req.body
     
     console.log(doctorId)
     const Reservation= new reservation({
@@ -274,7 +274,8 @@ router.post('/emailverification',(req,res)=>{
     month:month,
     Year:Year,
     img:link,
-    doctorimg:doctorlink
+    doctorimg:doctorlink,
+    apoinmmentId:apoinmmentId
     })
     Reservation.save().then(result=>{
       console.log(dayOfMonth)
@@ -324,8 +325,10 @@ router.post('/emailverification',(req,res)=>{
   
         let {userId,month,Year,dayOfMonth} =req.body
         console.log(userId)
-        Schedule.find({userId:userId,dayOfMonth,Year,month,"timeSlots": { $elemMatch: { available: true } }})
-        .then(result=>{if(result){res.json({result,status:200})}
+        Schedule.findOne({userId:userId,dayOfMonth,Year,month,"timeSlots": { $elemMatch: { available: true } }})
+        .then(result=>{
+          const slots= result.timeSlots.filter(slot => slot.available)
+          if(result){res.json({slots,apoinmmentId:result._id,status:200})}
         else{res.json({message:"wrong id",status:404})}
         })
         .catch(err=>{console.log("err viewing apoinment : ",err)
@@ -366,35 +369,11 @@ router.post('/emailverification',(req,res)=>{
           res.json({message:"something went wrong try again later",status:404})}
         })
       
-router.post("/linktest",(req,res)=>{
 
-
-let {link}= req.body
-
-newlink=convertDriveLink(link)
-console.log(link)
-res.send({link:newlink})
-})
-
-router.get('/fix',(req,res)=>{
-profile.find().then(async result=>{
-for(let doc of result){
-let link =convertDriveLink(doc.img)
-doc.img=link
-await doc.save()
-console.log(doc)
-}
-console.log(result)
-res.send("done converting")
-})
-
-
-
-})
 router.post("/cancel-apoinmment",(req,res)=>{
   let {reservationId,apoinmmentId} =req.body
   console.log(reservationId)
-  reservation.updateOne({_id:reservationId},{status:"canceled"}).then(async result=>{
+  reservation.updateOne({_id:reservationId},{appointmentStatus:"canceled"}).then(async result=>{
     if(result){
     Schedule.findOneAndUpdate( { 
     _id:apoinmmentId
