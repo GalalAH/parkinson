@@ -21,14 +21,12 @@ expiresAT:Date
   Year:{type:String,required:true},
   doctorName:{type:String,required:true},
   patientName:{type:String,required:true},
-  appointmentStatus:{type:String,default:'ongoing'},
+  appointmentStatus:{type:String},
+  apoinmmentId:String,
   img:String,
   doctorimg:String
 });
   
-
-
-
 
 
 //  user shema
@@ -75,12 +73,9 @@ const UserPatient = new mongoose.Schema({
       default: 0}
     })
 
-//pateints schema
-
 
 const rate= mongoose.model("rate",rateschema)
 const patientUser = mongoose.model("patientUser",UserPatient)
-
 const patientVerification = mongoose.model("patientVerification",patientVerificationschema )
 const reservation = mongoose.model("reserved",reservedApoinmentschema )
 module.exports ={patientUser,patientVerification,reservation,rate}

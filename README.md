@@ -314,6 +314,7 @@ res:{
             year:string
                 }
         res:{
+                result=[
                 userId :String,
                 dayOfWeek: String,
                 dayOfMonth: String,
@@ -325,7 +326,13 @@ res:{
                     available: Boolean// you don't have to access it
                 }
                 ],
-                available: Boolean // you don't have to access it
+                available: Boolean // you don't have to access it]
+
+
+                status:int
+                if there is an error
+                message:string
+                status:int
             }
 
 
