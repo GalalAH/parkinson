@@ -265,9 +265,9 @@ router.post('/emailverification',(req,res)=>{
   })
   router.post('/reserve',(req,res)=>{
 
-    let {apoinmmentId,doctorlink,patientName,doctorName,doctorId,dayOfWeek,patientId,TimeOfDay,dayOfMonth,month,Year,link}=req.body
+    let {appointmentId,doctorlink,patientName,doctorName,doctorId,dayOfWeek,patientId,TimeOfDay,dayOfMonth,month,Year,link}=req.body
     
-    console.log("appoiment id",apoinmmentId)
+    console.log("appoiment id",appointmentId)
     const Reservation= new reservation({
     doctorName:doctorName,
     patientName:patientName,
