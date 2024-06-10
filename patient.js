@@ -336,7 +336,7 @@ router.post('/emailverification',(req,res)=>{
          
           if(result){
              const slots= result.timeSlots.filter(slot => slot.available)
-            res.json({message:"here the avalible appoinments",slots,apoinmmentId:result._id,status:200})}
+            res.json({message:"here the avalible appoinments",slots,appointmentId:result._id,status:200})}
 
         else{res.json({message:"wrong id",status:404})}
         })
@@ -380,12 +380,12 @@ router.post('/emailverification',(req,res)=>{
       
 
 router.post("/cancel-apoinmment",(req,res)=>{
-  let {reservationId,apoinmmentId,TimeOfDay} =req.body
+  let {reservationId,appointmentId,TimeOfDay} =req.body
   console.log(reservationId)
   reservation.updateOne({_id:reservationId},{appointmentStatus:"canceled"}).then(async result=>{
     if(result){
     Schedule.findOneAndUpdate( { 
-    _id:apoinmmentId
+    _id:appointmentId
   },
   { 
     $set: { 'timeSlots.$[slot].available': true } 
@@ -393,9 +393,9 @@ router.post("/cancel-apoinmment",(req,res)=>{
   {
     arrayFilters: [{ 'slot.time': TimeOfDay}]
   }).then((result)=>{console.log(result)
-    return res.json({message:" the appinment got canceled",status:200})
+    return res.json({message:" the appointment got canceled",status:200})
 
-})}else{return res.json({message:"didn't find the appinment",status:404})}
+})}else{return res.json({message:"didn't find the appointment",status:404})}
  
   })
   .catch(err=>{console.log("err canclleing apoinment : ",err)
