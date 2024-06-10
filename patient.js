@@ -280,7 +280,7 @@ router.post('/emailverification',(req,res)=>{
     Year:Year,
     img:link,
     doctorimg:doctorlink,
-    apoinmmentId:apoinmmentId
+    appointmentId:appointmentId
     })
     Reservation.save().then(result=>{
       console.log(dayOfMonth)
