@@ -21,7 +21,7 @@ expiresAT:Date
   Year:{type:String,required:true},
   doctorName:{type:String,required:true},
   patientName:{type:String,required:true},
-  appointmentStatus:{type:String},
+  appointmentStatus:{type:String,default:"ongoing"},
   apoinmmentId:String,
   img:String,
   doctorimg:String
