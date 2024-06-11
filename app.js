@@ -509,10 +509,11 @@ app.post('/profile',async (req,res)=>{
 
 
     //console.log(req.file)
-    let {userId,name,address,phone, startTime, endTime,about, step,workdays,title}=req.body
+    let {whatsapp,userId,name,address,phone, startTime, endTime,about, step,workdays,title}=req.body
 
     const Profile = new profile({
       userId:userId,
+      whatsapp:whatsapp
       title:title,
       about:about,
       Name:name, 
