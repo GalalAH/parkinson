@@ -513,7 +513,7 @@ app.post('/profile',async (req,res)=>{
 
     const Profile = new profile({
       userId:userId,
-      whatsapp:whatsapp
+      whatsapp:whatsapp,
       title:title,
       about:about,
       Name:name, 
