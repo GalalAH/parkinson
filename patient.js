@@ -416,7 +416,7 @@ router.post("/cancel-apoinmment",(req,res)=>{
       Email:email 
       })
       .then(result=>{console.log(result)
-        return res.json({message:"edited successfully"})
+        return res.json({message:"edited successfully",status:200})
       }).catch(err=>{console.log(err)
       return res.json({message:"internal err",status:404})})
                     })
