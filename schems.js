@@ -69,7 +69,8 @@ const profileschema= new schema({
     title:{ type: String },
     workdays:{type:Array},
     startTime:String, endTime:String, step:String,
-    rate:String
+    rate:String,
+    whatsapp:boolean
 })
 const weeklyScheduleSchema = new mongoose.Schema({
     userId :String,
