@@ -387,8 +387,8 @@ router.post("/cancel-apoinmment",(req,res)=>{
   reservation. findByIdAndUpdate((reservationId,{appointmentStatus:"canceled"}).then(async result=>{
     if(result){
     Schedule. findByIdAndUpdate( 
-    _id:appointmentId
-},
+  appointmentId
+,
   { 
     $set: { 'timeSlots.$[slot].available': true } 
   },
@@ -400,7 +400,7 @@ router.post("/cancel-apoinmment",(req,res)=>{
 })}else{return res.json({message:"didn't find the appointment",status:404})}
  
   })
-  .catch(err=>{console.log("err canclleing apoinment : ",err)
+  .catch(err=>{console.log("err canclleing apoinment  ")
   return res.json({message:"internal err",status:404})
     })
   })
