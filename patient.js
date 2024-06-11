@@ -384,7 +384,7 @@ router.post("/cancel-apoinmment",(req,res)=>{
   console.log("appointmentId : ",appointmentId)
   console.log("reservationId : ",reservationId)
     console.log(",TimeOfDay : ",TimeOfDay)
-  reservation. findByIdAndUpdate((reservationId,{appointmentStatus:"canceled"}).then(async result=>{
+  reservation. findByIdAndUpdate(reservationId,{appointmentStatus:"canceled"}).then(async result=>{
     if(result){
     Schedule. findByIdAndUpdate( 
   appointmentId
