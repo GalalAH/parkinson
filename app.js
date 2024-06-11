@@ -573,12 +573,12 @@ app.post('/profile',async (req,res)=>{
 
 
 app.post("/edit-profile",async(req,res)=>{
-  let {whatsapp,title,about,name,address,phone, startTime, endTime, step,workdays,userId}=req.body 
+  let {whatsapp,title,about,Name,address,phone, startTime, endTime, step,workdays,userId}=req.body 
 
   console.log(userId)
    await profile.findOneAndUpdate({userId:userId},{
     phone: phone,
-    Name: name,
+    Name: Name,
     title:title,
     about:about,
     whatsapp:whatsapp,
