@@ -86,12 +86,12 @@ const filemetadata = {
 
 console.log("response",response.data.webViewLink)
 const link = await response.data.webViewLink
-
-patientUser.findByIdAndUpdate(id,{img:link})
+const download =convertDriveLink(link)
+patientUser.findByIdAndUpdate(id,{img:download})
 
 .catch((err)=>{console.log(err)})
 
-return link
+return download
 }catch(err){console.log(err)
     console.log("img not uploaded")
 
