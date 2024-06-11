@@ -631,8 +631,8 @@ app.post("/edit-profile",async(req,res)=>{
     let {_id} = req.body
       if(req.files){
         authorize().then(async result =>{const link = await uploadfile(result,req.files.image,_id)
-        
-         return res.json({message:"img uploaded successfully",link:link,status:200})
+        const download=convertDriveLink(link)
+         return res.json({message:"img uploaded successfully",link:download,status:200})
         })
   
         }else{
