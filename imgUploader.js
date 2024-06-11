@@ -91,7 +91,7 @@ patientUser.findByIdAndUpdate(id,{img:download})
 
 .catch((err)=>{console.log(err)})
 
-return download
+return link
 }catch(err){console.log(err)
     console.log("img not uploaded")
 
