@@ -147,7 +147,7 @@ User.save()
           // Authentication successful, set req.user and continue
           if (await bycrypt.compare(password,data.password)){
             const id = user._id
-            link=convertDriveLink(data.img)
+            link=data.img
             return res.status(200).json({ message: 'Authentication successful', status: 200,userId:id, data:data,link:link});
               
               }else{return res.status(200).json({ message: 'wrong password', status: 404})
