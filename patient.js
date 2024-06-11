@@ -384,11 +384,11 @@ router.post("/cancel-apoinmment",(req,res)=>{
   console.log("appointmentId : ",appointmentId)
   console.log("reservationId : ",reservationId)
     console.log(",TimeOfDay : ",TimeOfDay)
-  reservation.updateOne({_id:reservationId},{appointmentStatus:"canceled"}).then(async result=>{
+  reservation. findByIdAndUpdate((reservationId,{appointmentStatus:"canceled"}).then(async result=>{
     if(result){
-    Schedule.findOneAndUpdate( { 
+    Schedule. findByIdAndUpdate( 
     _id:appointmentId
-  },
+},
   { 
     $set: { 'timeSlots.$[slot].available': true } 
   },
